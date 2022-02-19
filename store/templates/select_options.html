@@ -1,0 +1,4 @@
+<option value>{{ default }}</option>
+{% for option in option_list %}
+<option value="{{option.id}}">{{option.name|title}}</option>
+{% endfor %}

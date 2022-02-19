@@ -1,0 +1,533 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block headscript %}
+<style>
+	.product-list::-webkit-scrollbar {
+		width: 10px;
+		color: #000;
+	}
+	.product-list::-webkit-inner-spin-button{
+		-webkit-appearance: none;
+		margin: 0;
+	}
+	.product-list::-webkit-scrollbar-track {
+    	-webkit-box-shadow: inset 0 0 6px rgba(55, 128, 190,0.3); 
+    	box-shadow: inset 0 0 6px rgba(55, 128, 190,0.3); 
+    	border-radius: 10px;
+	}
+	.product-list::-webkit-scrollbar-thumb {
+		border-radius: 10px;
+		-webkit-box-shadow: inset 0 0 6px rgba(55, 128, 190,0.5); 
+		box-shadow: inset 0 0 6px rgba(55, 128, 190,0.5); 
+	}
+
+	.checkout-form .card .card-header{
+		background-color: #3780be;
+		cursor: pointer;
+
+	}
+	.checkout-form .card .card-body .payment_col{
+		cursor: pointer;
+	}
+	.checkout-form .card .card-header h5{
+		color: white;
+	}
+</style>
+
+{% endblock headscript %}
+
+
+{% block content %}
+
+<!-- Page info -->
+<div class="page-top-info">
+	<div class="container">
+		<h4>Checkout</h4>
+		<div class="site-pagination">
+			<a href="{% url 'index' %}">Home</a> /
+			<a href="{% url 'products' %}">All Products</a> /
+			<a href="{% url 'CartIndex' %}">Cart</a> /
+			<a href="{% url 'Checkout' %}">Checkout</a>
+		</div>
+	</div>
+</div>
+<!-- Page info end -->
+
+
+<!-- checkout section  -->
+<section class="checkout-section spad">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-8 order-2 order-lg-1">
+				<div class="checkout-form">
+
+
+					<!-- add address heading -->
+					<div class="site-btn mb-3" id="add_address_div" data-toggle="modal"
+						 data-target="#add_address_model" style="cursor: pointer;"><i
+						   class="fa fa-plus-circle fa-lg mr-2"
+						   aria-hidden="true"></i><span> Add
+								Address</span> </div>
+					
+					<!-- add address model -->
+					<div class="modal fade" id="add_address_model" tabindex="-1" role="dialog"
+						 aria-labelledby="modelTitleId" aria-hidden="true">
+						<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title">Add Address</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body" id="add_address_modal_body">
+									Body
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<a href="{% url 'CartIndex' %}" class='site-btn' style="float:right"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>
+
+					
+					<!-- shipping address div -->
+					
+					<div class="card mb-2">
+						<div class="card-header" id="shipping_address_heading"><h5>Shipping Address</h5></div>
+						<div class="card-body" id='shipping_address_div_main'>
+						{% for address in addresses %}
+							
+							{% if address.address_type == 'S' or address.address_type == 'S&B' %}
+								<div class="row shipping_address_div p-4">
+									<div class="col-1 d-flex align-items-center justify-content-center">
+										<input type="radio" name="shipping_address" id="shipping_address{{address.id}}"
+											class="radio_shipping_address" address-id="{{ address.id }}">
+									</div>
+									<div class="col-9 shipping_address_area" id='shipping_address_div_{{ address.id }}' style="cursor: pointer;" address-id='{{ address.id }}'>
+										<div class="row ">
+											<div class="col-12">
+												<h6><strong>{{ address.first_name }} {{ address.last_name }}</strong>
+													{{ address.user.userprofile.mobile }}</h6>
+											</div>
+											<div class="col-12">
+												<h6>{{ address.address }}, {{ address.address_2 }},
+													{{ address.city }}, {{ address.state }}, {{ address.country }}</h6>
+											</div>
+											<!-- <div class="col-12 mt-2 d-none delivery_button"
+												id='shipping_address_button{{address.id}}'><a
+												onclick="addparameter('shipping_address_id','{{address.id}}')"
+												class="btn btn-primary">Deliver Here</a>
+											</div> -->
+										</div>
+									</div>
+									<div class="col-2 d-flex align-items-center justify-content-center">
+										<div style="position: absolute; top: 15px; right: 15px;">
+											<!-- Button trigger modal -->
+											<button type="button" class="btn btn-primary edit_address_btn"
+													data-toggle="modal"
+													data-target="#edit_address_model"
+													address-id="{{ address.id }}">
+												Edit
+											</button>
+										</div>
+									</div>
+								</div>
+							{% endif %}
+							
+						{% endfor %}
+						</div>
+					</div>
+
+
+
+
+
+
+					<!-- billing address div -->
+					<div class="card mb-2 order-2">
+						<div class="card-header" id='billing_address_heading'><h5>Billing Address</h5></div>
+						<div class="card-body" id="billing_address_div_main">
+						{% for address in addresses %}
+							
+							{% if address.address_type == 'B' or address.address_type == 'S&B' %}
+								
+								<div class="row address_div p-4">
+									<div class="col-1 d-flex align-items-center justify-content-center">
+										<input type="radio" name="address" id="address{{address.id}}" class="radio_address" address-id="{{address.id}}">
+									</div>
+
+									<div class="col-9 address_area" id='billing_address_div_{{ address.id }}' style="cursor: pointer;" address-id='{{ address.id }}'>
+										<div class="row ">
+											<div class="col-12">
+												<h6><strong>{{ address.first_name }} {{ address.last_name }}</strong>
+													{{ address.user.userprofile.mobile }}</h6>
+											</div>
+											<div class="col-12">
+												<h6>{{ address.address }}, {{ address.address_2 }},
+													{{ address.city }}, {{ address.state }}, {{ address.country }}</h6>
+											</div>
+											<!-- <div class="col-12 mt-2 d-none delivery_button" id='address_button{{address.id}}'><a
+												onclick="addparameter('address_id','{{address.id}}')"
+												class="btn btn-primary">Deliver Here</a>
+											</div> -->
+										</div>
+									</div>
+									<div class="col-2 d-flex align-items-center justify-content-center">
+										<div style="position: absolute; top: 15px; right: 15px;">
+											<!-- Button trigger modal -->
+											<button type="button" class="btn btn-primary edit_address_btn" data-toggle="modal"
+													data-target="#edit_address_model" address-id="{{ address.id }}">
+												Edit
+											</button>
+										</div>
+
+									</div>
+								</div>
+
+							{% endif %}
+
+						{% endfor %}
+						</div>
+					</div>
+
+					
+					<!-- payment div -->
+					<div class="row mt-4">
+						<div class="col-12 d-flex justify-content-end">
+							<form action="" method="POST" id='payment_form_id'>
+								{% csrf_token %}
+								{{ payment_form.billing_address }}
+								{{ payment_form.shipping_address }}
+								<button type="submit" class="site-btn w-50">Continue</button>
+							</form>
+						</div>
+					</div>						
+
+					<!-- Edit Address Modal -->
+					<div class="modal fade" id="edit_address_model" tabindex="-1" role="dialog"
+						 aria-labelledby="edit_address_label" aria-hidden="true"
+						 style="z-index: 9999;">
+						<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="edit_address_label">Edit
+										Address</h5>
+									<button type="button" class="close" data-dismiss="modal"
+											aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body" id='edit_address_body'>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div class="col-lg-4 order-1 order-lg-2">
+				<div class="checkout-cart">
+					<h3>My Cart</h3>
+					<ul class="product-list" style="overflow-y: auto; max-height: 300px;">
+
+						{% for item in cartitem_instance %}
+						<li>
+
+							{% if item.product.product_image %}
+							<div class="pl-thumb"><img src="{{ item.product.product_image.url }}" alt=""></div>
+							{% endif %}
+
+							<h6>{{ item.product.name }}</h6>
+							<span>Quantity: {{item.quantity}}</span>
+							<p>Sub Total: <i class="fa fa-inr" aria-hidden="true"></i> {{ item.sub_total }}</p>
+						</li>
+						{% endfor %}
+					</ul>
+					<ul class="price-list">
+						<li>Total<span><i class="fa fa-inr"
+								   aria-hidden="true"></i> {{ cartitem_instance.0.cart.grand_total.total }}</span></li>
+						<li>Shipping<span>free</span></li>
+						<li class="total">Total<span><i class="fa fa-inr"
+								   aria-hidden="true"></i> {{ cartitem_instance.0.cart.grand_total.total }}</span></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- checkout section end -->
+
+
+{% endblock content %}
+
+
+
+{% block endscript %}
+
+<!-- on payment option name or div click select current payment method -->
+<script>
+	$(document).ready(function () {
+		$(document).on('click', '.payment_col',function(){
+			if($(this).find('input[type="radio"]').prop('checked') == false){
+				console.log($(this).find('input[type="radio"]').prop('name'))
+				$(this).find('input[type="radio"]').prop('checked',true)
+				open_payment_div()
+			}
+			
+		})
+	});
+</script>
+
+<!-- payment form before submit validation -->
+<script>
+	function paymentFormSubmit() { 
+		paymentform = $('#payment_form_id')
+		billing_address = $('#id_billing_address').val()
+		shipping_address = $('#id_shipping_address').val()
+		if(billing_address == ''){
+			swal('Please Select Address','no billing address selected','warning');
+		}
+		if(shipping_address == ''){
+			swal('Please Select Address','no shipping address selected','warning');
+		}
+		if(billing_address != '' & shipping_address != ''){
+			console.log('billing and shipping addresses are selected');
+			paymentform.submit()
+		}
+		console.log(billing_address);
+	}
+</script>
+
+
+<!-- putting alert of messages gettting from server -->
+<script>
+	$(document).ready(function () {
+		// {% for message in messages %}
+			// {% if message %} jinja2
+				swal("{{message.tags}}","{{message}}","{% if message.tags == 'error' %}error{% elif  message.tags == 'warning' %}warning{% else %}success{% endif%}")
+			// {% endif %}
+		// {% endfor %}
+	});
+</script>
+
+
+<!-- toggle billing address div -->
+<script>
+	$('#billing_address_heading').click(function () {
+		if ($('#billing_address_div_main').hasClass('d-none')) {
+			$('#billing_address_div_main').removeClass('d-none').delay(100)
+		}
+		else {
+			$('#billing_address_div_main').addClass('d-none').delay(100)
+
+		}
+	})
+	$('#shipping_address_heading').click(function () {
+		if ($('#shipping_address_div_main').hasClass('d-none')) {
+			$('#shipping_address_div_main').removeClass('d-none').delay(100)
+		}
+		else {
+			$('#shipping_address_div_main').addClass('d-none').delay(100)
+
+		}
+	})
+	$('#payment_heading_id').click(function(){
+		let sibling = $(this).siblings('.card-body')
+		if (sibling.hasClass('d-none')) {
+			sibling.removeClass('d-none').delay(100)
+		}
+		else {
+			sibling.addClass('d-none').delay(100)
+
+		}
+	})
+</script>
+
+<!-- toggle shipping address div -->
+<script>
+	$(document).ready(function () {
+		$('.radio_address').change(function () {
+			var parent_this = $(this)
+			$('.radio_address').each(function () {
+				// console.log($(this).is(':checked'))
+				if ($(this).is(':checked')) {
+					$(this).parent('div').siblings('div').children().find('.delivery_button').removeClass('d-none')
+					$(this).parent('div').siblings('div').children().find('.edit_address_btn').removeClass('d-none')
+					$(this).parent('div').parent('div').attr('style', "background:#e1effe")
+					$('#shipping_address_heading').removeClass('d-none')
+					$('#shipping_address_div_main').removeClass('d-none')
+					// $('#billing_address_div_main').addClass('d-none')
+
+				}
+				else {
+					// $(this).parent('div').siblings('div').first().children().find('.delivery_button').addClass('d-none')
+					$(this).parent('div').siblings('div').children().find('.edit_address_btn').addClass('d-none')
+					$(this).parent('div').parent('div').attr('style', "background:transperent")
+
+				}
+				
+			})
+		})
+		$('.radio_shipping_address').change(function () {
+			var parent_this = $(this)
+			
+			$('.radio_shipping_address').each(function () {
+				// console.log($(this).is(':checked'))
+				if ($(this).is(':checked')) {
+					$(this).parent('div').siblings('div').children().find('.delivery_button').removeClass('d-none')
+					$(this).parent('div').siblings('div').children().find('.edit_address_btn').removeClass('d-none')
+					$(this).parent('div').parent('div').attr('style', "background:#e1effe")
+					$('.payment-div').removeClass('d-none')
+					// $('#shipping_address_div_main').addClass('d-none')
+
+				}
+				else {
+					$(this).parent('div').siblings('div').children().find('.edit_address_btn').addClass('d-none')
+					$(this).parent('div').parent('div').attr('style', "background:transperent")
+
+				}
+			})
+		})
+	});
+</script>
+
+<!-- edit button load page data in model and handle post event -->
+<script>
+	$(document).ready(function () {
+		$('.edit_address_btn').click(function () {
+			let shipping_address_id = $(this).attr('address-id')
+			console.log(shipping_address_id, '------------')
+			$.ajax({
+				type: "GET",
+				url: "{% url 'EditAddress' 0  %}".replace(0, shipping_address_id),
+				success: function (response) {
+					// console.log(response)
+					$('#edit_address_body').html(response)
+				}
+			});
+			$('.payment-div').removeClass('d-none')
+		})
+		function sleep(milliseconds) {
+			var start = new Date().getTime();
+			for (var i = 0; i < 1e7; i++) {
+				if ((new Date().getTime() - start) > milliseconds) {
+					break;
+				}
+			}
+		}
+		$(document).on('submit', '#edit_address_form', function (e) {
+			e.preventDefault();
+			$.ajax({
+				type: "POST",
+				url: "{% url 'EditAddress' 0 %}".replace(0, $(this).children('#edit_address_address_id').val()),
+				data: $(this).serialize(),
+				success: function (response) {
+					if (response == 'ok') {
+						console.log('ok')
+						$("#edit_address_model").modal('hide');
+						sleep(100)
+						$('#address_div').load(' #address_div>*', "")
+						$('#billing_address_div_main').load(' #billing_address_div_main>*', "")
+						$('#shipping_address_div_main').load(' #shipping_address_div_main>*', "")
+					}
+					else {
+						$('#add_address_modal_body').html(response)
+					}
+				}
+			});
+		})
+
+		$('.address_area').click(function () {
+			$(this).siblings().find('.radio_address').trigger("click")
+		})
+		$('.radio_address').click(function(){
+			console.log($(this).attr('address-id'), 'address selected for billing');
+			$('#id_billing_address').val($(this).attr('address-id'))
+		})
+		$('.shipping_address_area').click(function () {
+			$(this).siblings().find('.radio_shipping_address').trigger("click")
+		})
+		$('.radio_shipping_address').click(function(){
+			console.log($(this).attr('address-id'), 'address selected for shipping');
+			$('#id_shipping_address').val($(this).attr('address-id'))
+		})
+
+
+		// for selecting default address
+
+		// {% if new_address %}
+			console.log("{{ new_address }}");
+			$('#billing_address_div_{{ new_address.id }}').click()
+		// {% endif %}
+
+		// {% if new_shipping_address %}
+			console.log("{{ new_shipping_address }}");
+		$('#shipping_address_div_{{ new_shipping_address.id }}').click()
+		// {% endif %}
+
+	});
+</script>
+
+<!-- open payment div when radio get selected -->
+<script>
+	function open_payment_div() {
+		console.log('ok')
+		console.log($(this).parent().find('input').is(':checked'))
+		if (true) {
+			$('#payment_div').show("fast")
+		}
+		else {
+			$('#payment_div').hide()
+		}
+	}
+</script>
+
+
+<!-- add address ajax -->
+<script>
+	$('#add_address_div').click(function () {
+		$.ajax({
+			type: "GET",
+			url: "{% url 'AddAddress' %}",
+			success: function (response) {
+				console.log(response)
+				// response = 'ok'
+				$('#add_address_modal_body').html(response)
+			}
+		});
+	})
+	function sleep(milliseconds) {
+		var start = new Date().getTime();
+		for (var i = 0; i < 1e7; i++) {
+			if ((new Date().getTime() - start) > milliseconds) {
+				break;
+			}
+		}
+	}
+	$(document).ready(function () {
+		$(document).on('submit', '#add_address_form', function (e) {
+			e.preventDefault();
+			$.ajax({
+				type: "POST",
+				url: "{% url 'AddAddress' %}",
+				data: $(this).serialize(),
+				success: function (response) {
+					if (response == 'ok') {
+						console.log('ok')
+						// $('#add_address_model').modal('toggle');
+						$("#add_address_model").modal('hide');
+						sleep(100)
+						window.location.reload()
+					}
+					else {
+						$('#add_address_modal_body').html(response)
+					}
+				}
+			});
+		});
+	});
+</script>
+{% endblock endscript %}

@@ -1,0 +1,242 @@
+{% load static %}
+{% load extra_tag %}
+<!-- nav category submenu opener -->
+<style>
+    .parent{
+        display: flex;
+        justify-content: center;
+    }
+
+    .parent:hover>ul {
+        display: block;
+        position: absolute;
+        border-radius: .25rem;
+        z-index: 2;
+    }
+    .parent:hover> ul a{
+        color: black;
+    }
+
+    .child {
+        display: none;
+        background-clip: padding-box;
+        border: 1px solid rgba(0,0,0,.15);
+        border-radius: .25rem;
+    }
+    
+
+    .child li {
+        min-width: 100%;
+        padding: .2rem 0;
+        font-size: 1rem;
+        color: #212529;
+        text-align: left;
+        list-style: none;
+        background-color: #fff;
+        
+        
+    }
+    .main-menu .parent .child a{
+        margin-right: 0px;
+    }
+    .child li a {
+        display: block;
+        width: 100%;
+        padding: .25rem 1.5rem;
+        clear: both;
+        font-weight: 400;
+        color: #212529;
+        text-align: inherit;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+        font-size: 14px;
+        text-decoration: none;
+    }
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0px;
+        min-width: 10em;
+    }
+
+    ul ul ul {
+        left: 100%;
+        top: 0;
+        margin-left: 1px;
+    }
+    ul ul ul ul{
+        left: 100%;
+        top: 0;
+        margin-left: 1px;
+    }
+
+    /* li:hover {
+        background-color: #95B4CA;
+    } */
+
+    .parent li:hover >a,
+    .parent li a.active {
+        background-color: #3780bebf;
+        color: white;
+        border-bottom: none;
+        margin-bottom: 0px;
+    }
+
+    .expand {
+        font-size: 12px;
+        float: right;
+        margin-right: 0px;
+    }
+</style>
+
+<!-- common style -->
+<style>
+    .up-item#wishlist-card:hover > a .wishlist-card .fa-heart-o::before{
+        content: '\f004';
+    }
+</style>
+
+
+<!-- Header section -->
+<header class="header-section">
+    <div class="header-top">
+        <div class="container">
+            <div class="row d-flex align-items-center">
+                <div class="col-lg-2 text-center text-lg-left d-flex align-items-center justify-content-center">
+                    <!-- logo -->
+                    <a href="{% url 'index' %}" class="site-logo">
+                        <img src="{% static 'img/happy1.png' %}" height="60px" alt="">
+                        <!-- <h3>Happy</h3> -->
+                    </a>
+                </div>
+                <div class="col-xl-6 col-lg-5">
+                    <form class="header-search-form" action="{% url 'products' %}" method="get">
+                        <input type="text" name="search" placeholder="Search products">
+                        <button><i class="flaticon-search"></i></button>
+                    </form>
+                </div>
+                <div class="col-xl-4 col-lg-5">
+                    <div class="user-panel">
+                        <div class="up-item dropdown" id='my_account_dropdown_menu_button'>
+                            <a class="dropdown-toggle" id="my_account_dropdown_menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="flaticon-profile"></i>
+                                {% if request.user.is_authenticated %}
+                                    {{request.user.first_name|title }}
+                                {% else %}
+                                    <a href="{% url 'nevigate:Login' %}">Sign In</a>
+                                {% endif %}
+                            </a>
+                            {% if request.user.is_authenticated %}
+                            <div class="dropdown-menu" style="z-index:11;" id="my_account_dropdown_menu_block" aria-labelledby="my_account_dropdown_menu">
+                                <a class="dropdown-item" href="{% url 'UserProfileView' %}">My Account</a>
+                                <a class="dropdown-item" href="{% url 'nevigate:Logout' %}">Logout</a>
+                              </div>
+                            {% endif %}
+                        </div>                        
+                        <div class="up-item mr-3">
+                            <a href="{% url 'CartIndex' %}">
+                                <div class="shopping-card">
+                                    <i class="flaticon-bag"></i>
+                                    <span>{{ cart_count }}</span>
+                                </div> Shopping Cart</a>
+                        </div>
+                        
+                        {% if request.user.is_authenticated %}
+                            <div class="up-item" id='wishlist-card'>
+                                <a href="{% url 'Wishlist' %}"><div class="wishlist-card">
+                                    <i class="fa fa-heart-o text-danger"></i>
+                                </div> Wishlist</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+</header>
+<nav class="main-navbar" style="position: -webkit-sticky;position: sticky;top: 0; margin-top: 0; z-index: 10;">
+    <div class="container">
+        <!-- menu -->
+        <ul class="main-menu">
+            <li><a href="{% url 'index' %}" id='nav_home'>Home</a></li>
+            {% for category, info in nav_categories %}
+                
+                {# comment {% if category|is_category_available %} #}
+                    <!-- opening tags  -->
+                    {% if info.open %}
+
+                        <!-- if first category of ul then remove opening ul tag -->
+                        {% if category.is_root %}
+                            <li class="parent">
+                        
+                        <!-- if its not first element of list then open ul tag for sub category -->
+                            
+                        {% else %}
+                            <ul class="child">
+                            <!-- if ls have subcategory then add parent class -->
+                            {% if category.get_children_count > 0 and category|is_category_available %}
+                                <li class="parent">
+                            
+                            <!-- if ls dont have any child then dont add parent class -->
+                            {% else %}
+                                
+                                {% if category|is_category_available %}
+                                    <li>
+                                {% endif %}
+                                    
+                            {% endif %}
+                        {% endif %}
+                    
+
+                    <!-- if its not opening tags then its internal lists -->
+                    {% else %}
+                        
+                        {% if category|is_category_available %}
+                            <!-- if ls have childrent then add parent class -->
+                                {% if category.get_children_count > 0 %}
+                                    </li><li class="parent">
+                                
+                                <!-- if ls dont have childrent then close and open normal list -->
+                                {% else %}
+                                    </li><li>   
+                                {% endif %}
+
+                        {% endif %}
+                            
+                    {% endif %}
+
+                    <!-- just add text between open and closed li -->
+                    <!-- if have li have children and not root depth of 1 then add >> at end of text -->
+                    
+                    {% if category|is_category_available %}
+
+                        {% if category.get_children_count > 0 and category.get_depth > 1 and category.is_children_available  %}
+                            <a id="nav_category_{{ category.id }}" href="{% url 'products' %}?category={{ category.id }}">{{ category|title }} <span class="expand">&raquo;</span></a>
+                        
+                        <!-- if li is depth of 1 then add normal text to it -->
+                        {% else %}
+                            <a id="nav_category_{{ category.id }}" href="{% url 'products' %}?category={{ category.id }}">{{ category|title }}</a>
+                        {% endif %}
+
+                    {% endif %}
+
+
+                    <!-- if info is for closing tag -->
+                    {% for close in info.close %}
+                        <!-- if its root of ul then dont close ul just close li -->
+                        {% if category.is_root and category|is_category_available %}
+                            </li>
+                        <!-- else close ul and li -->
+                        {% else %}
+                        </li></ul>
+                        {% endif %}
+                    {% endfor %}
+                {# comment {% endif %} #}
+            {% endfor %}
+        </ul>
+    </div>
+</nav>
+<!-- Header section end -->

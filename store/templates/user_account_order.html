@@ -1,0 +1,201 @@
+{% load extra_tag %}
+<div class="tab-pane fade" id="v-pills-order" role="tabpanel" aria-labelledby="v-pills-order-tab">
+    
+    {% if order_instance|length != 0 %}
+        <div class="row mb-4 border pb-5">
+            <div class="col-12">
+                <div class="cart-table" style="background: transparent; border-radius: 0px;">
+                    <div class="col-12">
+                        <div class="row d-flex justify-content-center" style="padding: .75rem 1.25rem;">
+                            <div class="col-3 d-flex justify-content-center"><h5>Order Number</h5></div>
+                            <div class="col-3 d-flex justify-content-center"><h5>Order Date</h5></div>
+                            <div class="col-5 d-flex justify-content-center"><h5>Total Amount</h5></div>
+                            <div class="col-1 d-flex justify-content-center"></div>
+                        </div>
+                    </div>
+                    {% for order in order_instance %}
+                    <div class="col-12 card mt-2 rounded" style="white-space: nowrap;">
+                        <div class="card-header row d-flex align-items-center">
+                            <div class="col-3 d-flex justify-content-center">
+                                <h6>{{ order.order_number }}</h6>
+                            </div>
+                            <div class="col-3 d-flex justify-content-center">
+                                <h6>{{ order.order_date|date:"d M Y" }}</h6>
+                            </div>
+                            <div class="col-5 d-flex justify-content-center">
+                                <h6><i class="fa fa-inr"
+                                    aria-hidden="true"></i> {{ order.total_price }}</h6>
+                            </div>
+                            <div class="col-1 d-flex justify-content-end" title="Re-Order">
+                                <h6><a href="{% url 'ReOrder' order.id %}"><i class="fa fa-repeat"
+                                        aria-hidden="true"></i></a></h6>
+                            </div>
+                        </div>
+                        
+                        {% if order.cart.cartitem_set.count > 2 %}
+                            {% if forloop.counter != 1 %}
+                                <div class="card-body d-none p-0 pb-2" style="min-height: 370px;">    
+                            {% else %}
+                                <div class="card-body p-0 pb-2" style="min-height: 370px;">
+                            {% endif %}
+                        {% else %}
+                            {% if forloop.counter != 1 %}
+                                <div class="card-body d-none p-0 pb-2">    
+                            {% else %}
+                                <div class="card-body p-0 pb-2">
+                            {% endif %}
+                        {% endif %}
+                            
+                        
+                            {% for item in order.cart.cartitem_set.all %}
+                                
+                                {% if forloop.counter > 2 %}
+                                    <div class="row mt-3 align-items-center d-none order-item-body-row">
+                                {% else %}
+                                    <div class="row mt-3 d-flex align-items-center order-item-body-row">
+                                {% endif %}
+                                        <div class="col-2 d-flex align-items-center justify-content-center" title="{{item.product.name}}">
+                                            {% if item.product.product_image %}
+                                            <a href="{% url 'product_detail_view' item.product.id %}"><img
+                                                    src="{{ item.product.product_image.url }}" width="100px"
+                                                    alt=""></a>
+                                            {% else %}
+                                            <a href="{% url 'product_detail_view' item.product.id %}"><img
+                                                    src="https://via.placeholder.com/300" class="border-0"
+                                                    width="100px"></a>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="row">
+                                                <div class="col-12" style="white-space: initial;">
+                                                    <h6><b>{{ item.product.name|safe|title }}</b></h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>
+                                                        <b>Unit Price: </b>
+                                                        <i class="fa fa-inr" aria-hidden="true"></i> {{ item.price_ht }}
+                                                    </h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>
+                                                        <b>Quantity: </b>{{ item.quantity }}
+                                                    </h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>
+                                                        <b>Sub Total: </b>
+                                                        <i class="fa fa-inr" aria-hidden="true"></i> {{ item.sub_total }}
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row d-flex justify-content-center">
+                                                <div class="col-3">
+                                                    <i class="fa fa-cart-plus fa-lg" style="color:#3780be; cursor: pointer;" title="Add to cart" onclick="addToCart('{{ item.product.id }}',1,'')" aria-hidden="true"></i>
+                                                </div>
+                                                <div class="col-3">
+                                                    <a href="{% url 'BuyAgain' item.product.id %}"><i class="fa fa-repeat fa-lg" title="Buy Again" aria-hidden="true"></i></a>
+                                                </div>
+                                            </div>
+                                            <div class="row d-flex justify-content-center">
+                                                    {% if order|non_review_product:item.product.parent %}
+                                                    <div class="col-12 mt-2 d-flex align-items-center justify-content-center">
+                                                        <a href="#" order_id="{{ order.id }}" data-toggle="modal" data-target="#review_model" product_id="{{ item.product.id }}" class="nav nav-link review-link">Give Review</a>
+                                                    </div>
+                                                    {% endif %}
+                                            </div>
+                                        </div>                                            
+                                    </div>
+
+                            {% if not forloop.last %}
+                            <!-- <div class="row">
+                                <div class="col-12">
+                                    <hr>
+                                </div>
+                            </div> -->
+                            {% else %}
+                                
+                                {% if forloop.counter > 2 %}
+                                <nav aria-label="Page navigation" class="order-data-pagination" style="position: absolute; bottom: 0; left: 30%; right: 30%;">
+                                    <ul class="pagination d-flex justify-content-center mt-5 mb-3">
+                                        {{ order|pagination_html|safe }}
+                                    </ul>
+                                  </nav>
+                                {% endif %}
+                                    
+                            {% endif %}
+
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+
+
+                    <!-- review Modal -->
+                    <div class="modal fade" id="review_model" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                    <div class="modal-header">
+                                            <h5 class="modal-title">Add Your Review</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                        </div>
+                                <div class="modal-body">
+                                    <div class="container-fluid" id='review_model_body'>
+                                        Add rows here
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            {% if order_instance.has_previous or order_instance.has_next %}	
+                <div class="col-12 d-flex justify-content-center" style="position: relative; margin-top: 20px; margin-bottom: 40px;">
+                    <nav aria-label="Page navigation">   
+                        <ul class="pagination">
+                        {% if order_instance.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" onclick="changePage(1)" aria-label="Previous">
+                                <span aria-hidden="true">First</span>
+                                <span class="sr-only">begin</span>
+                                </a>
+                            </li>   
+                        {% endif %}
+                        
+                        {% for n in order_instance.paginator.page_range %}
+                            {% if order_instance.number == n %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ n }}<span class="sr-only">(current)</span></span>
+                            </li>
+                            {% elif n > order_instance.number|add:'-3' and n < order_instance.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" onclick="changePage('{{ n }}')">{{ n }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if order_instance.has_next %}
+                            <li class="page-item">
+                            <a class="page-link" onclick="changePage('{{ order_instance.paginator.num_pages }}')" aria-label="Next">
+                                <span aria-hidden="true">Last</span>
+                                
+                            </a>
+                            </li>
+                            {% endif %}   </ul> </nav>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+    <div class="col-12 alert d-flex justify-content-center">
+        <h4>No Orders Placed Yet</h4>
+    </div>
+    {% endif %}
+</div>
+

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load extra_tag %}
+
+
+
+{% block headscript %}
+    <style>
+        .card-header{
+            background-color: #3780be;
+            cursor: pointer;
+            color: white;
+        }
+
+        /* for loader */
+        #overlay{	
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            height:100%;
+            display: none;
+            background: rgba(0,0,0,0.6);
+        }
+        .cv-spinner {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;  
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px #ddd solid;
+            border-top: 4px #2e93e6 solid;
+            border-radius: 50%;
+            animation: sp-anime 0.8s infinite linear;
+        }
+        @keyframes sp-anime {
+            100% { 
+                transform: rotate(360deg); 
+            }
+        }
+        .is-hide{
+            display:none;
+        }
+    </style>
+    <script src="https://js.stripe.com/v3/"></script>
+{% endblock headscript %}
+    
+
+
+{% block content %}
+
+<!-- Page info -->
+<div class="page-top-info">
+	<div class="container">
+		<h4>Checkout</h4>
+		<div class="site-pagination">
+			<a href="{% url 'index' %}">Home</a> /
+			<a href="{% url 'products' %}">All Products</a> /
+			<a href="{% url 'CartIndex' %}">Cart</a> /
+			<a href="{% url 'Checkout' %}">Checkout</a> /
+			<a href="{% url 'PaymentPage' %}">Payment</a>
+		</div>
+	</div>
+</div>
+
+
+<section class="spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-12"><h5>Shipping Address</h5></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12"><h6><strong>{{ shipping_address.first_name }} {{ shipping_address.last_name }}</strong> {{ shipping_address.user.mobile }} </h6></div>
+                            <div class="col-12">{{ shipping_address.address}}, {{ shipping_address.address_2 }}, {{ shipping_address.city }}, {{ shipping_address.state }}, {{shipping_address.country }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-12"><h5>Billing Address</h5></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12"><h6><strong>{{ billing_address.first_name }} {{ billing_address.last_name }}</strong> {{ billing_address.user.mobile }} </h6></div>
+                            <div class="col-12">{{ billing_address.address}}, {{ billing_address.address_2 }}, {{ billing_address.city }}, {{ billing_address.state }}, {{billing_address.country }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-12"><h5>Select Payment</h5></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mt-3 payment_div_option_select">
+                            <div class="col-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header d-inline stripe-header p-0 bg-white"  style="color: black;">
+                                        <div class="col-12 form-inline d-flex align-items-center"><input type="radio" class="form-control mr-3" name='payment_option_radio'><h5>Stripe</h5></div>
+                                    </div>
+                                </div>
+                                <form action="{% url 'StripePayment' %}" class="d-none" id='stripe_form' method="post">
+                                    {% csrf_token %}
+                                </form>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header p-0 authorize-header bg-white" style="color: black;">
+                                        <div class="col-12 form-inline d-flex align-items-center"><input type="radio" class="form-control mr-3" name='payment_option_radio'><h5>Authorize.net</h5></div>
+                                    </div>
+                                    <div class="card-body d-none">
+                                        <form action="{% url 'AuthorizePaymentGateway' %}" id='authorize_form' method="post">
+                                            {% csrf_token %}
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="row">
+                                                        <div class="col-lg-6 col-md-12 col-sm-12">
+                                                            <div class="form-group">
+                                                                {{ authorize_form.name_on_card.label}}
+                                                                {{ authorize_form.name_on_card}}
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6 col-md-12 col-sm-12 ">
+                                                            <div class="form-group">
+                                                                {{ authorize_form.card_number.label}}
+                                                                {{ authorize_form.card_number}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-lg-3 col-sm-12 col-md-12 ">
+                                                            <div class="form-group">
+                                                                {{ authorize_form.month.label}}
+                                                                {{ authorize_form.month}}
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3 col-sm-12 col-md-12 ">
+                                                            <div class="form-group">
+                                                                {{ authorize_form.year.label}}
+                                                                {{ authorize_form.year}}
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-3 col-sm-12 col-md-12 ">
+                                                            <div class="form-group">
+                                                                {{ authorize_form.cvv.label}}
+                                                                {{ authorize_form.cvv}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row d-flex justify-content-center">
+                                                        <div class="col-8 d-flex justify-content-center">
+                                                            <button type="submit" class="site-btn" style="width: 40%;">Pay Now</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- loader -->
+<div id="overlay">
+	<div class="cv-spinner">
+	  <span class="spinner"></span>
+	</div>
+</div>
+
+<!-- Page info end -->
+    
+    
+{% endblock content %}
+    
+
+
+{% block endscript %}
+<!-- open card body when click card header -->
+<script>
+    $('.payment_div_option_select').find('.card-header').click(function(){
+        console.log('clicking');
+        $('.payment_div_option_select').find('.card').each(function(){
+            if(!$(this).find('.card-body').hasClass('d-none')){
+                $(this).find('.card-body').addClass('d-none')
+            }
+            $(this).find('input[type=radio]').removeAttr('checked')
+        })
+
+        $(this).find('input[type=radio]').attr('checked','checked')
+        console.log($(this).find('input[type=radio]').attr('checked'));
+        if($(this).find('.card-body').hasClass('d-none')){
+            $(this).find('.card-body').removeClass('d-none')
+        }
+        else{
+            $(this).find('.card-body').addClass('d-none')
+        }
+        
+    })
+    $(document).ready(function () {
+        $('.card-header').click(function(){
+            if($(this).parent('.card').children('.card-body').hasClass('d-none')){
+                $(this).parent('.card').children('.card-body').removeClass('d-none')
+            }
+            
+            else{
+                $(this).parent('.card').children('.card-body').addClass('d-none')
+            }
+            $(this).find('input[type=radio]').attr('checked','checked')
+            
+        })
+    });
+    
+</script>
+
+
+<!-- stripe form submit -->
+<script>
+    $('.stripe-header').click(function(){
+        $('#overlay').fadeIn(300)
+
+    // Create an instance of the Stripe object with your publishable API key
+        var stripe = Stripe("pk_test_51HZ7mKGfCjKz4qJu4y8MbUUthrDhewoL4gFYivbCGDQRtXLa23gywIRLA42FlEL2SDi84LEro9g6ko6U9Xe12L1e00xo0yixCc");
+            fetch("{% url 'StripePayment' %}", {
+                method: "POST",
+            }).then(function (response) {
+                if(response.status != 200){
+                    swal('Payment Request Failed',"Could not process payment request right now", 'error')
+                        .then((value) => {
+                        window.location.href = '/payment/'
+                    });
+                }
+                return response.json();
+            })
+                .then(function (session) {
+                return stripe.redirectToCheckout({ sessionId: session.id });
+                })
+                .then(function (result) {
+                // If redirectToCheckout fails due to a browser or network
+                // error, you should display the localized error message to your
+                // customer using error.message.
+                if (result.error) {
+                    alert(result.error.message);
+                }
+                })
+                .catch(function (error) {
+                console.error("Error:", error);
+            });
+    })
+
+    $(document).on('submit','#authorize_form', function(){
+        $('#overlay').fadeIn(300)
+    })
+
+</script>
+{% endblock endscript %}
+    

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block headscript %}
+<style>
+    .card-header{
+        cursor: pointer;
+    }
+    /* .card-body .row div h5{
+        color: white;
+    } */
+</style>
+
+{% endblock headscript %}
+
+
+{% block content %}
+
+<div class="page-top-info">
+    <div class="container">
+        <h4>Cart</h4>
+        <div class="site-pagination">
+            <a href="{% url 'index' %}">Home</a> /
+            <a href="{% url 'products' %}">All Products</a> /
+            <a href="{% url 'OrderView' %}">Orders</a>
+        </div>
+    </div>
+</div>
+
+
+<section class="cart-section spad pt-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="cart-table" style="background: transparent; border-radius: 0px;">
+                    <h3>My Orders</h3>
+                    
+                    {% for order in order_instance %}
+                    <div class="col-12 card mt-2 rounded">
+                        <div class="card-header row d-flex align-items-center">
+                            <div class="col-3 d-flex justify-content-center"><h5>Order ID:{{ order.id }}</h5></div>
+                            <div class="col-3 d-flex justify-content-center"><h5>{{ order.order_date|date:"d M Y" }} {{ order.order_date|time:"H:i" }}</h5></div>
+                            <div class="col-3 d-flex justify-content-center"><h5>Order Amount:<i class="fa fa-inr" aria-hidden="true"></i> {{ order.total_price }}</h5></div>
+                            <div class="col-3 d-flex justify-content-end"><h5><a href="{% url 'ReOrder' order.id %}"><i class="fa fa-repeat" aria-hidden="true"></i></a></h5></div>
+                        </div>
+                        <div class="card-body d-none  p-0 pb-2">
+                            <div class="row mt-1 rounded" >
+                                <div class="col-2 d-flex align-items-center justify-content-center"><p>Product</p></div>
+                                <div class="col-2 d-flex align-items-center justify-content-center"><p>Price</p></div>
+                                <div class="col-2 d-flex align-items-center justify-content-center"><p>Quantity</p></div>
+                                <div class="col-3 d-flex align-items-center justify-content-center"><p>Sub Total</p></div>
+                                <div class="col-3 d-flex align-items-center justify-content-center"><p>Action</p></div>
+                            </div>
+                            {% for item in order.cart.cartitem_set.all %}
+                                <div class="row">
+                                    <div class="col-2 d-flex align-items-center justify-content-center">
+                                        {% if item.product.product_image %}
+											<a href="{% url 'product_detail_view' item.product.id %}"><img src="{{ item.product.product_image.url }}" width="100px" alt=""></a>
+										{% else %}
+											<a href="{% url 'product_detail_view' item.product.id %}"><img src="https://via.placeholder.com/300" class="border-0" width="100%"></a>
+										{% endif %}
+                                    </div>
+                                    <div class="col-2 d-flex align-items-center justify-content-center"><h5><i class="fa fa-inr" aria-hidden="true"></i> {{ item.price_ht }}</h5></div>
+                                    <div class="col-2 d-flex align-items-center justify-content-center"><h5>{{ item.quantity }}</h5></div>
+                                    <div class="col-3 d-flex align-items-center justify-content-center"><h5><i class="fa fa-inr" aria-hidden="true"></i> {{ item.sub_total }}</h5></div>
+                                    <div class="col-3 d-flex align-items-center justify-content-center">
+                                        <div class="col-md-12 ">
+                                            <form action="{% url 'AddProduct' 'OrderView' %}" method="POST" class="mb-2">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="product" value="{{ item.product.id }}">
+                                                <input type="submit" class="site-btn  w-50 h-50 p-0 pt-2 d-inline pb-2" value="Add to cart" />
+                                            </form>
+                                            <a href="{% url 'product_detail_view' item.product.id%}" class="site-btn w-50 h-50 pt-2 d-inline pb-2">Buy
+                                                Again</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if not forloop.last %}
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <hr>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                    
+                            {% endfor %}
+                                
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+
+
+{% block endscript %}
+<script>
+    $('.card-header').click(function (e) { 
+        e.preventDefault();
+        if($(e.target).is($(this).children().find('i'))){
+            var url = $(this).children().find('a').attr('href')
+            console.log($(this).children().find('a').attr('href'));
+            window.location = url
+        }
+        if($(this).siblings('.card-body').hasClass('d-none')){
+            $(this).siblings('.card-body').removeClass('d-none')
+        }
+        else{
+            $(this).siblings('.card-body').addClass('d-none')
+        }
+    });
+</script>
+
+{% endblock endscript %}

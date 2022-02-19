@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div class="container alert alert-danger mt-4">
+        <div class="col-12">
+            <h4>Sorry! your cannot place order right now, Try after sometime.</h4>
+        </div>
+    </div>
+{% endblock content %}
+
+
+{% block headscript %}
+    
+    
+    {% for message in messages %}
+        <script>
+            console.log('{{ message.tags }} {{ message }}')
+        </script>
+        {% if message.tags == 'warning' %}
+            <script>
+                console.log('{{ message.tags }} {{ message }}')
+                window.location.replace("{% url 'products' %}");
+            </script>
+        {% endif %}
+            
+        
+    {% endfor %}
+            
+
+{% endblock headscript %}
+    

@@ -1,0 +1,3 @@
+{% for option in option_list %}
+    <option value="{{option.id}}">{{option.productAttribute|safe}}: {{option.value|title}}</option>
+{% endfor %}

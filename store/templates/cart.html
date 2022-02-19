@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load extra_tag %}
+
+
+{% block headscript %}
+<style>
+	.fa.fa-shopping-cart{
+		opacity: .6;
+		font-size: 15em;
+	}
+	.fa.fa-shopping-cart:hover{
+		opacity: 1;
+		font-size: 16em;
+		-moz-transition: 200ms;
+		-webkit-transition: 200ms;
+		transition: 200ms;
+	}
+	.total-col h4,
+	.price-col h4{
+		margin-bottom: 0;
+	}
+	.cart-table::-webkit-scrollbar {
+		width: 10px;
+		color: #000;
+	}
+	.cart-table::-webkit-inner-spin-button{
+		-webkit-appearance: none;
+		margin: 0;
+	}
+	.cart-table::-webkit-scrollbar-track {
+    	-webkit-box-shadow: inset 0 0 6px rgba(55, 128, 190,0.3); 
+    	box-shadow: inset 0 0 6px rgba(55, 128, 190,0.3); 
+    	border-radius: 10px;
+	}
+	.cart-table::-webkit-scrollbar-thumb {
+		border-radius: 10px;
+		-webkit-box-shadow: inset 0 0 6px rgba(55, 128, 190,0.5); 
+		box-shadow: inset 0 0 6px rgba(55, 128, 190,0.5); 
+	}
+</style>
+{% endblock headscript %}
+	
+
+{% block content %}
+		
+	<!-- Page info -->
+	<div class="page-top-info">
+		<div class="container">
+			<h4>Cart</h4>
+			<div class="site-pagination">
+				<a href="{% url 'index' %}">Home</a> /
+				<a href="{% url 'products' %}">All Products</a> /
+				<a href="{% url 'CartIndex' %}">Cart</a>
+			</div>
+		</div>
+	</div>
+	<!-- Page info end -->
+
+
+	<!-- cart section end -->
+	<section class="cart-section spad pt-0">
+		<div class="container">
+			{% if cart_data and cart_data.cartitem_set.all|length != 0 %}
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="cart-table mt-3" style="background: transparent; border-radius: 0px; overflow-y: auto; max-height: 400px;">
+						<!-- <h3>Your Cart</h3> -->
+						<div class="cart-table-warp">
+							<table>
+							<thead>
+								<tr>
+									<th class="product-th"><h5>Product</h5></th>
+									<th class="unit-price-th"><h5>Unit Price</h5></th>
+									<th class="quy-th"><h5>Quantity</h5></th>
+									<th class="total-th"><h5>Price</h5></th>
+								</tr>
+							</thead>
+							<tbody id='cart_body'>
+								{% for item in cart_data.cartitem_set.all %}
+								<tr>
+							
+									<td class="product-col">
+										{% if item.product.product_image %}
+											<a href="{% url 'product_detail_view' item.product.id %}"><img src="{{ item.product.product_image.url }}" alt=""></a>
+										{% else %}
+											<a href="{% url 'product_detail_view' item.product.id %}"><img src="https://via.placeholder.com/300" class="border-0" width="100%"></a>
+										{% endif %}
+										<div class="pc-title">
+											<h4>{{ item.product.name }}</h4>
+											{% for m2m in item.product.varient_property.all %}
+												<p>
+													{{m2m.productAttribute.name}}:{{m2m.value}}
+												</p>
+											{% endfor %}
+										</div>
+									</td>
+									<td class="price-col">
+										<h4><i class="fa fa-inr" aria-hidden="true"></i> {{item.price_ht}}</h4>
+									</td>
+									<td class="quy-col">
+										<div class="quantity">
+											
+					                        <div class="pro-qty" style="background: #f0f0f0;">
+												<span class="dec qtybtn">-</span>
+												<input type="text" product-id="{{ item.product.id }}" value="{{ item.quantity }}">
+												<span class="inc qtybtn">+</span>
+											</div>
+											
+                    					</div>
+									</td>
+									<td class="total-col" id='sub_total{{item.product.id }}'><h4><i class="fa fa-inr" aria-hidden="true"></i> {{ item.sub_total }}</h4></td>
+									<td class="cancle-col"><a href="{% url 'RemoveProduct' item.product.id %}"><i class="fa fa-times" aria-hidden="true"></i></a></td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+						</div>
+						<div class="total-cost">
+							<h6>Total <span><i class="fa fa-inr" aria-hidden="true"></i> {% if cart_total_amount != None %}
+								{{ cart_data.grand_total.total }}
+								{% else %}
+								0
+							{% endif %}</span></h6>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-12 mt-4 d-flex justify-content-end">
+						<!-- <form class="promo-code-form">
+							<input type="text" placeholder="Enter promo code">
+							<button>Submit</button>
+						</form> -->
+					<a href="{% url 'products' %}" class="site-btn sb-dark mr-2">Continue shopping</a>
+					<a href="{% url 'Checkout' %}" class="site-btn">Proceed to checkout</a>
+				</div>
+			</div>
+			{% elif products|length != 0 %}
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="cart-table" style="background: transparent; border-radius: 0px;">
+							<!-- <h3>Your Cart</h3> -->
+							<div class="cart-table-warp">
+								<table>
+								<thead>
+									<tr>
+										<th class="product-th"><h5>Product</h5></th>
+										<th class="unit-price-th"><h5>Unit Price</h5></th>
+										<th class="quy-th"><h5>Quantity</h5></th>
+										<th class="total-th"><h5>Price</h5></th>
+									</tr>
+								</thead>
+								<tbody id='cart_body'>
+									{% for product in products %}
+									<tr>
+								
+										<td class="product-col">
+											{% if product.product_image %}
+												<a href="{% url 'product_detail_view' product.id %}"><img src="{{ product.product_image.url }}" alt=""></a>
+											{% else %}
+												<a href="{% url 'product_detail_view' product.id %}"><img src="https://via.placeholder.com/300" class="border-0" width="100%"></a>
+											{% endif %}
+											<div class="pc-title">
+												<h4>{{ product.name }}</h4>
+												{% for m2m in product.varient_property.all %}
+													<p>
+														{{m2m.productAttribute.name}}:{{m2m.value}}
+													</p>
+												{% endfor %}
+											</div>
+										</td>
+										<td class="price-col">
+											<h4><i class="fa fa-inr" aria-hidden="true"></i> {{product.price}}</h4>
+										</td>
+										<td class="quy-col">
+											<div class="quantity">
+												
+												<div class="pro-qty" style="background: #f0f0f0;">
+													<span class="dec qtybtn">-</span>
+													<input type="text" product-id="{{ product.id }}" value="{{ cart_cookie|dict_value_get:product.id }}" disabled>
+													<span class="inc qtybtn">+</span>
+												</div>
+												
+											</div>
+										</td>
+										<td class="total-col" id='sub_total{{ product.id }}'><h4><i class="fa fa-inr" aria-hidden="true"></i> {% widthratio product.price 1 cart_cookie|dict_value_get:product.id %}</h4></td>
+										<td class="cancle-col"><a href="{% url 'RemoveProduct' product.id %}"><i class="fa fa-times" aria-hidden="true"></i></a></td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							</div>
+							<div class="total-cost">
+								<h6>Total <span><i class="fa fa-inr" aria-hidden="true"></i> {{ cart_cookie|cookie_grand_total }}</span></h6>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-12 mt-4 d-flex justify-content-end">
+							<!-- <form class="promo-code-form">
+								<input type="text" placeholder="Enter promo code">
+								<button>Submit</button>
+							</form> -->
+						<a href="{% url 'products' %}" class="site-btn sb-dark mr-2">Continue shopping</a>
+						<a href="{% url 'Checkout' %}" class="site-btn">Proceed to checkout</a>
+					</div>
+				</div>
+			{% else %}
+			<div class="row mt-5">
+				<div class="col-lg-12">
+					<div class="cart-table">
+						<div class="col-12 d-flex justify-content-center">
+							<!-- <a href="{% url 'products' %}" class="fa fa-shopping-cart"></a> -->
+							<div class="card-body cart">
+								<div class="col-sm-12 empty-cart-cls text-center"> <img src="{% static 'img/empty-cart.png'%}"  class="img-fluid mb-4 mr-3">
+									<h3><strong>Your Cart is Empty</strong></h3>
+									<a href="{% url 'products' %}" class="site-btn cart-btn-transform mb-4" data-abc="true">continue shopping</a>
+								</div>
+							</div>
+						</div>
+						<!-- <div class="col-12 mt-2 mb-2 d-flex justify-content-center">
+							<a href="{% url 'products' %}" class="site-btn sb-dark">Add Something</a>
+						</div> -->
+					</div>
+					
+				</div>
+			</div>
+			{% endif %}
+		</div>
+	</section>
+	<!-- cart section end -->
+
+{% endblock content %}
+
+
+
+{% block endscript %}
+	<!-- putting alert of messages gettting from server -->
+	<script>
+		$(document).ready(function () {
+			// {% for message in messages%}
+				// {% if message %}
+						swal("{{message.tags}}","{{message}}","{% if message.tags == 'error' %}error{% elif  message.tags == 'warning' %}warning{% else %}success{% endif%}")
+				// {% endif %}
+			// {% endfor %}
+		});
+	</script>
+
+	<script>
+		$(document).ready(function () {
+			console.log('reloading');
+			var proQty = $('.pro-qty');
+			
+			$(document).on('click', '.qtybtn', function (e) {
+				var $button = $(this);
+				console.log($button.html());
+				var oldValue = $button.parent().find('input').val();
+				if ($button.hasClass('inc')) {
+					var newVal = parseInt(oldValue) + 1;
+				} else {
+					// Don't allow decrementing below zero
+					if (oldValue > 0) {
+						var newVal = parseInt(oldValue) - 1;
+					} else {
+						newVal = 0;
+					}
+				}
+				$button.parent().find('input').val(newVal);
+				// console.log($('#qty_input').val())
+
+				var $button = $(this);
+				var quantity = $button.parent().find('input').val();
+				var product_id = $button.parent().find('input').attr('product-id')
+				console.log(product_id,quantity);
+				$.ajax({
+					type: "GET",
+					url: "{% url 'ChangeCartQuantity' 000000 111111 %}".replace(000000,product_id).replace(111111, quantity),
+					success: function (response) {
+						$button.parents('tr').children('.total-col').load(' #'+$button.parents('tr').children('.total-col').attr('id')+'>*')
+						$('.total-cost').load(' .total-cost>*','')
+						console.log($('.cart-table').find('tbody').prop('tagName'));
+						$('.shopping-card').load(' .shopping-card>*')
+						if(quantity == 0){	
+							// $('#cart_body').load(' #cart_body>*',"")
+							$('.cart-section ').load(' .cart-section>*','')
+						}
+					}
+				});
+			})		
+		});
+		
+	</script>
+{% endblock endscript %}
+	

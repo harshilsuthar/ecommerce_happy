@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+
+    <head>
+        <title>Happy Ecommerce</title>
+        <meta charset="UTF-8">
+
+        <meta name="description" content=" Divisima | eCommerce Template">
+        <meta name="keywords" content="divisima, eCommerce, creative, html">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Favicon -->
+        <link rel="icon" href="{% static 'img/happy1.ico' %}">
+
+        <!-- Google Font -->
+        <!-- <link href="https://fonts.googleapis.com/css?family=Josefin+Sans:300,300i,400,400i,700,700i" rel="stylesheet"> -->
+
+
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+        <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
+        
+
+        <style>
+            .up-item.dropdown{
+                cursor: pointer;
+            }
+            .dropdown-toggle::after{
+                display: none;
+            }
+            .main-menu li .active{
+                border-bottom: 5px solid white;
+                padding-bottom: 5px;
+                margin-bottom: 5px;
+            }
+            .main-menu li .dropdown .dropdown-menu a.active{
+                color: white;
+                background-color: #3780bebf;
+                border-bottom: none;
+                margin-bottom: 0px;
+            }
+            .site-pagination a{
+                font-weight: 500;
+            }
+            .dropdown:hover > .dropdown-menu {
+                display: block;
+            }
+            .dropdown-menu{
+                margin: .05rem 0 0;
+            }
+            .up-item.dropdown > .dropdown-toggle{
+                pointer-events: none;
+            }
+            .dropdown .dropdown-item:hover > a{
+                color: white;
+            }
+            .dropdown .dropdown-item:hover{
+                background-color: #3780bebf;
+            }
+            .main-menu li .dropdown .dropdown-menu a:hover{
+                color: white;
+                background-color: #3780bebf;
+                border-bottom: none;
+                margin-bottom: 0px;
+            }
+            .wishlist-btn{
+                cursor: pointer;
+            }
+            .wishlist-btn:hover > i {
+                font-size: 1.2em;
+                -webkit-transition: 100ms;
+                transition: 100ms;
+            }
+            a{
+                cursor: pointer;
+            }
+        </style>
+
+
+        {% block headscript %}
+            
+        {% endblock headscript %}
+            
+        
+    </head>
+
+
+
+    <body>
+        {% include 'header.html' %}
+
+        {% block content %}
+
+        {% endblock content %}
+        
+        {% include 'footer.html' %}
+
+    </body>
+    <link rel="stylesheet" href="{% static 'css/animate.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/flaticon.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/slicknav.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}" />
+    
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/jquery.slicknav.min.js' %}"></script>
+    <script src="{% static 'js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'js/jquery.nicescroll.min.js' %}"></script>
+    <script src="{% static 'js/jquery.zoom.min.js' %}"></script>
+    <script src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/sweetalert.min.js' %}"></script>
+    <!-- <script src="{% static 'js/Chart.min.js' %}"></script> -->
+
+    <!-- add to wishlist -->
+    <script>
+        $(document).on('click', '.wishlist-btn', function(){
+            let wishlist_btn = $(this)
+            let product_id = $(this).attr('product-id')
+            let is_disabled = $(this).attr('disabled')
+            if(is_disabled == undefined){
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'Wishlist' %}",
+                    data: {'product_id':product_id},
+                    success: function (response) {
+                        console.log(response, typeof(response))
+                        if(response == 'product added to wishlist'){
+                            if(wishlist_btn.children('i').hasClass('flaticon-heart')){
+                                wishlist_btn.children('i').removeClass('flaticon-heart')
+                                wishlist_btn.children('i').addClass('fa fa-heart text-danger')
+                                wishlist_btn.attr('disabled','')
+                                swal('Good Job',response, 'success')
+                            }
+                            else{
+                                swal(response)
+                            }
+                        }
+                    }
+                });
+            }
+            else{
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'RemoveWishlist' %}",
+                    data: {'product_id':product_id},
+                    success: function (response) {
+                        if(response == 'product removed from wishlist'){
+                            if(wishlist_btn.children('i').hasClass('fa-heart')){
+                                wishlist_btn.children('i').removeClass('fa fa-heart text-danger')
+                                wishlist_btn.children('i').addClass('flaticon-heart')
+                                wishlist_btn.removeAttr('disabled')
+                                $('#wishlist_product_div').load(' #wishlist_product_div>*')
+                            }
+                            else{
+                                swal(response)
+                            }
+                        }
+                    }
+                });
+            }
+        })
+    </script>
+
+    <!-- hide wishlist button if user is not logged in -->
+    <script>
+        // {% if not request.user.is_authenticated%}
+            $('.wishlist-btn').addClass('d-none')
+        // {% endif %}
+    </script>
+
+    <!-- add to cart ajax -->
+    <script>
+        function addToCart(product_id,quantity,redirect_page) {
+            // console.log(redirect_page)
+            $.ajax({
+                type: "GET",
+                url: "{% url 'GetProductQuantity' %}",
+                data: {'product_id':product_id},
+                success: function (response) {
+                    let current_product_quantity = response
+                    console.log(current_product_quantity);
+                    if(quantity<=parseInt(current_product_quantity)){
+                        $.ajax({
+                            type: "GET",
+                            url: "{% url 'addToCart' %}",
+                            data: {'product_id':product_id, 'quantity': quantity, 'redirect_page':redirect_page},
+                            success: function (response) {
+                                $('.shopping-card').load(' .shopping-card>*')
+                                if (response == 1){
+                                    console.log(redirect_page);
+                                    if( redirect_page == "CartIndex" ){
+                                        window.location.href = "{% url 'CartIndex' %}"
+                                    }
+                                    else if( redirect_page == "products" ){
+                                        window.location.href = "{% url 'products' %}"
+                                    }
+                                    else if( redirect_page == "product_detail_view" ){
+                                        window.location.href = "{% url 'product_detail_view' 0 %}".replace(0,product_id)
+                                    }
+                                    else{
+                                        swal('Good Job','Product added to the cart', 'success')
+                                    }
+                                }
+                                else{
+                                    swal('Error','Could not add to cart', 'error')
+                                }
+                            }
+                        });
+                    }
+                    else{
+                        swal('Could Not Add To Cart','This Much Quantity Is Not Available', 'warning')
+                    }
+                }
+            });
+            
+        }
+    </script>
+
+    <!-- selected nav css change js -->
+    <script>
+        var href = new URL(window.location.href)
+        console.log(href.pathname,'------');
+        if (href.pathname == '{% url "index" %}') {
+          $('#nav_home').addClass('active');
+        }
+        else if (href.pathname == '{% url "products" %}') {
+            let category_id = href.searchParams.get('category');
+            if(category_id != null){
+                $('#nav_category_'+category_id).addClass('active')
+                console.log($('#nav_category_'+category_id).parents());
+                $('#nav_category_'+category_id).parents('.parent').children('a').addClass('active')
+            }
+        }
+      </script>
+    {% block endscript %}
+
+    {% endblock endscript %}
+        
+
+</html>

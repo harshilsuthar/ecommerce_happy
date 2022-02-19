@@ -1,0 +1,594 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block headscript %}
+<style>
+    p {
+        margin-bottom: 0px;
+    }
+
+    h5, h6, h1, h2, h3, h4 {
+        font-weight: 400;
+    }
+
+    .card-header {
+        cursor: pointer;
+    }
+
+    /* .cart-table .site-btn{
+        min-width: 120px;
+    } */
+
+    /* #add_address_button > i{
+        cursor: pointer;
+        font-size: 48px;
+    } */
+    /* #add_address_button:hover > i{
+        color:#68686e;
+        font-size: 58px;
+    } */
+
+    .nav-pills .nav-link.active{
+        background-color: #3780be;
+    }
+    .errorlist{
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        position: relative;
+        padding: .75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: .25rem;
+    }
+</style>
+
+
+<!-- product rating star css -->
+<style>
+	.rating-stars ul {
+		list-style-type: none;
+		padding: 0;
+
+		-moz-user-select: none;
+		-webkit-user-select: none;
+	}
+
+	.rating-stars ul>li.star {
+		display: inline-block;
+
+	}
+
+	/* Idle State of the stars */
+	.rating-stars ul>li.star>i.fa {
+		font-size: 2.5em;
+		/* Change the size of the stars */
+		color: #ccc;
+		/* Color on idle state */
+	}
+
+	/* Hover state of the stars */
+	.rating-stars ul>li.star.hover>i.fa {
+		color: #3780be;
+	}
+
+	/* Selected state of the stars */
+	.rating-stars ul>li.star.selected>i.fa {
+		color: #37b0be;
+	}
+
+</style>
+
+{% endblock headscript %}
+
+
+
+{% block content %}
+<div class="page-top-info">
+    <div class="container">
+        <h4>My Account</h4>
+        <div class="site-pagination">
+            <a href="{% url 'index' %}">Home</a> /
+            <a href="{% url 'UserProfileView' %}">My Account</a> /
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-3 mt-4">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+
+                <!-- user profile link  -->
+                <a class="nav-link active" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile"
+                   role="tab" aria-controls="v-profile-home" aria-selected="true">Profile</a>
+
+
+                <!-- my orders link -->
+                <a class="nav-link" id="v-pills-order-tab" data-toggle="pill" href="#v-pills-order" role="tab"
+                   aria-controls="v-pills-order" aria-selected="false">My Orders</a>
+
+                <!-- manage address link -->
+                <a class="nav-link" id="v-pills-address-tab" data-toggle="pill" href="#v-pills-address" role="tab"
+                   aria-controls="v-pills-address" aria-selected="false">Manage Address</a>
+
+                <a class="nav-link" id="v-pills-change-password-tab" data-toggle="pill" href="#v-pills-change-password" role="tab"
+                aria-controls="v-pills-change-password" aria-selected="false">Change Password</a>
+            </div>
+        </div>
+        <div class="col-9" style="min-height: 500px;">
+            <div class="tab-content" id="v-pills-tabContent">
+
+                <!-- user profile tab -->
+                {% include 'user_account_profile.html' %}
+
+               
+                <!-- my order tab -->
+                {% include 'user_account_order.html' %}
+
+                
+                <!-- addresses tab -->
+                {% include 'user_account_address.html' %}
+
+
+                <!-- change password tab -->
+                {% include 'user_account_change_password.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+
+{% endblock content %}
+
+
+{% block endscript %}
+<script src="{% static 'js/pagination.min.js' %}"></script>
+
+<!-- edit address ajax loads modal -->
+<script>
+    $(document).ready(function () {
+        function sleep(milliseconds) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds){
+                break;
+                }
+            }
+        }
+        $(document).on('click','.edit_address_btn_class', function () { 
+            let address_id = $(this).attr('address-id')
+            console.log(address_id, '------------')
+            $.ajax({
+                type: "GET",
+                url: "{% url 'EditAddress' 0  %}".replace(0, address_id),
+                success: function (response) {
+                    // console.log(response)
+                    $('#edit_address_body').html(response)
+                }
+            });
+            $('shipping_address_div_main').removeClass('d-none')
+        })
+
+        $(document).on('submit','#edit_address_form', function(e){
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{% url 'EditAddress' 0 %}".replace(0,$(this).children('#edit_address_address_id').val()),
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response == 'ok'){
+                        console.log('ok')
+                        // $('#add_address_model').modal('toggle');
+                        $("#edit_address_model").modal('hide');
+                        sleep(100)
+                        $('#address_div').load(' #address_div>*',"")
+                        $('#billing_address_div_main').load(' #billing_address_div_main>*',"")
+                        $('#shipping_address_div_main').load(' #shipping_address_div_main>*',"")
+                        swal('Success','Address Update Successfully','success')
+                    }
+                    else{
+                        $('#add_address_modal_body').html(response)
+                    }
+                }
+            });
+        })
+
+    })
+</script>
+
+
+<!-- user profile update page -->
+<script>
+    $(document).on('click','#user_profile_form_submit_btn', function () {
+        var msg = "<li>message</li>"
+        let if_flag = false 
+        $('#user_profile_form_messages').html('')
+        if($('#user_profile_form').find('#id_first_name').val() == ''){
+            $('#user_profile_form_messages').append(msg.replace('message','first name could not be blank'))
+            if_flag = true
+        }
+        if($('#user_profile_form').find('#id_last_name').val() == ''){
+            $('#user_profile_form_messages').append(msg.replace('message','last name could not be blank'))
+            if_flag = true
+        }
+        if($('#user_profile_form').find('#id_email').val() == ''){
+            $('#user_profile_form_messages').append(msg.replace('message','email could not be blank'))
+            if_flag = true
+        }
+        if($('#user_profile_form').find('#id_mobile').val() == ''){
+            $('#user_profile_form_messages').append(msg.replace('message','mobile number could not be blank'))
+            if_flag = true
+        }
+        if($('#user_profile_form').find('#id_mobile').val() <= 999999999 | $('#user_profile_form').find('#id_mobile').val() >= 10000000000 ){
+            $('#user_profile_form_messages').append(msg.replace('message','mobile number must be exect 10 digit long'))
+            if_flag = true
+        }
+        if(if_flag == false){
+            $.ajax({
+                type: "POST",
+                url: "{% url 'UserProfileView' %}",
+                data: $('#user_profile_form').serialize(),
+                success: function (response) {
+                    if (response == 'Profile Updated Successfully') {
+                        swal('Success',response,'success')
+                    }
+                    else{
+                        $('#user_profile_form_messages').html(response)
+                    }
+                    console.log(response)
+                }
+            });
+        }
+     })
+</script>
+
+
+<!-- add new address ajax load data in modal -->
+<script>
+    function addAddress() {
+        $.ajax({
+            type: "GET",
+            url: "{% url 'AddAddress' %}",
+            success: function (response) {
+                $('#add_address_modal_body').html(response)
+            }
+        });
+    }
+    $(document).ready(function () {
+        function sleep(milliseconds) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds){
+                break;
+                }
+            }
+        }
+        $(document).on('submit','#add_address_form', function(e){
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{% url 'AddAddress' %}",
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response == 'ok'){
+                        console.log('ok')
+                        // $('#add_address_model').modal('toggle');
+                        $("#add_address_model").modal('hide');
+                        sleep(100)
+                        $('#address_div').load(' #address_div>*',"")
+                        $('#billing_address_div_main').load(' #billing_address_div_main>*',"")
+                        $('#shipping_address_div_main').load(' #shipping_address_div_main>*',"")
+                        swal('Success','New Address Added Successfully','success')
+                    }
+                    else{
+                        $('#add_address_modal_body').html(response)
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
+<!-- remove address ajax -->
+<script>
+    $(document).on('click','.remove_address_class', function(){
+        let address_id = $(this).attr('address-id')
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this address!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+            })
+            .then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'RemoveAddress' 0 %}".replace(0, address_id),
+                    success: function (response) {
+                        if(response == 'deleted'){
+                            $('#address_div').load(' #address_div>*')
+                            swal('Success','Address Remove Successfully','success')
+                        }
+                        else{
+                            swal('Error','could not delete this address','error')
+                        }
+                        
+                    }
+                });
+            }
+        });
+        
+    })
+</script>
+
+
+<!-- change password submit form ajax -->
+<script>
+
+    function passwordMatcher(){
+        if ($('#id_new_password').val() == $('#id_confirm_password').val()) {
+            $('#message').html('').css('color', 'green');
+            $('#change_password_submit_button').removeAttr("disabled")
+            $('#change_password_submit_button').css({"background-color":"#3780be","cursor":"pointer"})
+        } 
+        else{
+            $('#message').html('New password and Confirm password are not matching').css('color', 'red');
+            $('#change_password_submit_button').attr("disabled","true")
+            $('#change_password_submit_button').css({"background-color":"#6ba1cf","cursor":"not-allowed"})
+        }
+    }
+
+    function blankFieldChecker(){
+        if($('#id_old_password').val() == '' | $('#id_new_password').val() == '' | $('#id_confirm_password').val() == ''){
+            $('#change_password_submit_button').attr("disabled","true")
+            $('#change_password_submit_button').css({"background-color":"#6ba1cf","cursor":"not-allowed"})
+        }
+        else{
+            $('#change_password_submit_button').removeAttr("disabled")
+            $('#change_password_submit_button').css({"background-color":"#3780be","cursor":"pointer"})
+        }
+    }
+    blankFieldChecker()
+    $('#id_confirm_password').on('keyup', function () {
+        passwordMatcher()
+    });
+    $('#id_new_password').on('keyup', function(){
+        if($('#id_confirm_password').val() != ''){
+            console.log('calling');
+            passwordMatcher()
+        }
+    })
+    $('#id_old_password').on('keyup', function () {
+        blankFieldChecker()
+    })
+    
+    $(document).on('click','#change_password_submit_button', function(){
+        console.log('clicking');
+
+
+        $.ajax({
+            type: "POST",
+            url: "{% url 'ChangePasswordView' %}",
+            data: $('#change_password_form').serialize(),
+            success: function (response) {
+                if(response == 'ok'){
+                    console.log('password change successfully');
+                    swal('Success','password change successfully','success')
+                }
+                else{
+                    console.log('error in form');
+                    $('#v-pills-change-password').html($(response).filter('#v-pills-change-password').html())
+                }
+            }
+        });
+    })
+</script>
+
+
+<!-- in my orders click on one of the order open card body -->
+<script>
+    $('.card-header').click(function (e) {
+        e.preventDefault();
+        if ($(e.target).is($(this).children().find('i'))) {
+            var url = $(this).children().find('a').attr('href')
+            console.log($(this).children().find('a').attr('href'));
+            window.location = url
+        }
+        $(this).parent('.card').siblings('.card').each(function(){
+            if (!$(this).children('.card-body').hasClass('d-none')) {
+                $(this).children('.card-body').addClass('d-none')
+            }
+        })
+        if ($(this).siblings('.card-body').hasClass('d-none')) {
+            $(this).siblings('.card-body').removeClass('d-none')
+        }
+        else {
+            $(this).siblings('.card-body').addClass('d-none')
+        }
+    });
+</script>
+
+
+<!-- load add review model data ajax -->
+<script>
+    $(document).ready(function () {
+        $('.review-link').click(function (e) { 
+            e.preventDefault();
+            let product_id = $(this).attr('product_id')
+            let order_id= $(this).attr('order_id')
+            console.log(product_id, order_id)
+            $.ajax({
+                type: "GET",
+                url: "{% url 'Review' %}",
+                data: {'product_id':product_id, 'order_id':order_id},
+                success: function (response) {
+                    console.log(response)
+                    $('#review_model_body').html(response)
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        if(window.location.href.indexOf('v-pills-order-tab') != -1){
+            $('#v-pills-order-tab').click()
+        }
+        else if(window.location.href.indexOf('v-pills-address-tab') != -1){
+            $('#v-pills-address-tab').click()
+        }
+        else if(window.location.href.indexOf('v-pills-change-password-tab') != -1){
+            $('#v-pills-change-password-tab').click()
+        }
+    });
+</script>
+
+
+<!-- pagination on click page change -->
+<script>
+    function changePage(page_number) { 
+        if(page_number){
+            window.location.href = "{% url 'UserProfileView' %}?order_page_number="+page_number+'#v-pills-order-tab'
+        }
+     }
+</script>
+
+<script src="{% static 'js/jquery.validate.min.js' %}"></script>
+
+<script>
+    function setDefaultAddress(address_id){
+        $.ajax({
+            type: "GET",
+            url: "{% url 'SetDefaultAddress' 0%}".replace(0,address_id),
+            success: function (response) {
+                if(response == 1){
+                    swal('Good Job','You have successfully set default address','success')
+                    $('#v-pills-address').load(' #v-pills-address>*','')
+                }
+                else{
+                    swal('Sorry','Could not set this address as default','error')
+                }
+            }
+        });
+    }
+</script>
+
+
+<!-- order data pagination if single order contains morethen 5 items -->
+
+<script>
+    const range = (start, stop, step = 1) =>
+            Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step)
+    $('.page-link').click(function () {
+        $(this).parent().addClass('active')
+        $(this).parent().siblings().removeClass('active')
+        selected_page = $(this).attr('page-number')
+        item_per_page = 2
+        // console.log(selected_page,'-----selected page');
+            $(this).parents('.card-body').children('.order-item-body-row').each(function(){
+                if($(this).hasClass('d-flex')){
+                    $(this).removeClass('d-flex')
+                }
+                if(!$(this).hasClass('d-none')){
+                    $(this).addClass('d-none')
+                }
+                // console.log($(this).attr('class'));
+            })
+        for(i of range((selected_page-1)*item_per_page, item_per_page*selected_page)){
+            // console.log(i);
+            row_to_display = $(this).parents('.card-body').children('.order-item-body-row').eq(i)
+            row_to_display.removeClass('d-none')
+            row_to_display.addClass('d-flex')
+            // console.log(row_to_display.attr('class'));        
+        }
+    
+        
+            
+            console.log($(this).parents('.order-data-pagination').find('.page-item.active').index()),'------index of selected pagination';
+            let active_page = $(this).parents('.order-data-pagination').children('.pagination').children('.page-item.active')
+            console.log(active_page.html());
+            console.log('max length------',$(this).parents('.order-data-pagination').find('.page-item').length);
+            if(active_page.index() == 0){
+                active_page.siblings().addClass('d-none')
+                console.log(active_page.siblings().eq(active_page.index()).html())
+                console.log(active_page.siblings().eq(active_page.index()+1).html())
+                if(active_page.siblings().eq(active_page.index()).hasClass('d-none')){
+                    active_page.siblings().eq(active_page.index()).removeClass('d-none')
+                }
+                if(active_page.siblings().eq(active_page.index()+1).hasClass('d-none')){
+                    active_page.siblings().eq(active_page.index()+1).removeClass('d-none')
+                }
+            }
+            else if(active_page.index() == $(this).parents('.order-data-pagination').find('.page-item').length-1){
+                
+                active_page.siblings().addClass('d-none')
+                console.log(active_page.siblings().eq(active_page.index()-2).html())
+                console.log(active_page.siblings().eq(active_page.index()-3).html())
+                if(active_page.siblings().eq(active_page.index()-2).hasClass('d-none')){
+                    active_page.siblings().eq(active_page.index()-2).removeClass('d-none')
+                }
+                if(active_page.siblings().eq(active_page.index()-3).hasClass('d-none')){
+                    active_page.siblings().eq(active_page.index()-3).removeClass('d-none')
+                }
+            }
+            else{
+                active_page.siblings().addClass('d-none')
+                console.log(active_page.siblings().eq(active_page.index()).html())
+                console.log(active_page.siblings().eq(active_page.index()-1).html())
+                if(active_page.siblings().eq(active_page.index()).hasClass('d-none')){
+                    active_page.siblings().eq(active_page.index()).removeClass('d-none')
+                }
+                
+                if(active_page.siblings().eq(active_page.index()-1).hasClass('d-none')){
+                    active_page.siblings().eq(active_page.index()-1).removeClass('d-none')
+                }
+            }
+
+
+    })
+</script>
+
+<!-- <script>
+    var ctx = document.getElementById('id_order_per_month').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'March', 'April', 'May', 'Jun', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: '# of Votes',
+                data: [
+                    // {% for month in per_month_order %}
+                    "{{month}}",
+                    // {% endfor %}
+                ],
+                backgroundColor: [
+                // {% for month in per_month_order %}
+                'rgba(255, 99, 132, 0.2)',
+                // {% endfor %}
+                    
+                ],
+                borderColor: [
+                    // {% for month in per_month_order %}
+                    'rgba(255, 99, 132, 1)',
+                    // {% endfor %}
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+</script> -->
+{% endblock endscript %}

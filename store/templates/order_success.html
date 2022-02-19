@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<style>
+    /* .container div{
+        background:repeating-linear-gradient(cyan,purple);
+    } */
+
+</style>
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 400px;">
+    <div class="row d-flex justify-content-center">
+        <div class="col-12 d-flex justify-content-center">
+            <i class="fa fa-check-circle text-success" style="font-size: 7em;" aria-hidden="true"></i>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <h3>Your Order Has Been Placed Successfully</h3>
+        </div>
+        
+        <div class="col-12 d-flex justify-content-center">
+            <h4>Order Number: {{ order_number }}</h4>
+        </div>
+        <div class="col-8 mt-4 d-flex justify-content-center">
+            <h5>Thank you for ordering, We received your order and will begin processing it soon. We will send your order information on your registered email.</h5>
+        </div>
+        <div class="col-12 mt-3 d-flex justify-content-center">
+            <a class="site-btn" href="{% url 'products' %}">Continue Shopping</a>
+        </div>
+    </div>
+    
+    <!-- <div class="row ">
+        <div class="col-md-8 mb-5">
+            <div class="cart-table" style="background: transparent; border-radius: 0px;">
+                <h4>Your Order</h4>
+                <div class="cart-table-warp mt-4">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="product-th">Product</th>
+                                <th class="unit-price-th">Unit Price</th>
+                                <th class="quy-th">Quantity</th>
+                                <th class="total-th">Sub Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id='cart_body'>
+                            {% for item in order.cart.cartitem_set.all %}
+                            <tr>
+
+                                <td class="product-col">
+                                    {% if item.product.product_image %}
+                                    <a href="{% url 'product_detail_view' item.product.id %}"><img
+                                             src="{{ item.product.product_image.url }}" alt=""></a>
+                                    {% else %}
+                                    <a href="{% url 'product_detail_view' item.product.id %}"><img
+                                             src="https://via.placeholder.com/300" class="border-0" width="100%"></a>
+                                    {% endif %}
+                                    <div class="pc-title">
+                                        <h4>{{ item.product.name }}</h4>
+                                        {% for m2m in item.product.varient_property.all %}
+                                        <p>
+                                            {{m2m.productAttribute.name}}:{{m2m.value}}
+                                        </p>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <th class="price-col">
+                                    <h4><i class="fa fa-inr" aria-hidden="true"></i> {{item.price_ht}}</h4>
+                                </th>
+                                <th class="price-col">
+                                    <h4>{{ item.quantity }}</h4>
+                                </th>
+
+                                <th class="total-col" id='sub_total{{item.product.id }}'>
+                                    <h4><i class="fa fa-inr" aria-hidden="true"></i> {{ item.sub_total }}</h4>
+                                </th>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="total-cost">
+                    <h6>Total <span><i class="fa fa-inr" aria-hidden="true"></i> {% if cart_total_amount != None %}
+                        {{ order.cart.grand_total.total }}
+                        {% else %}
+                        0
+                    {% endif %}</span></h6>
+                </div>
+            </div>
+            
+        </div>
+        <div class="col-md-4 float-right">
+            <div class="cart-table" style="background: transparent; border-radius: 0px;">
+                <h4>Billing Address</h4>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p>
+                            {{ order.address.first_name |title }} {{ order.address.last_name |title }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.address.address }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.address.address_2 }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.address.city }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.address.state }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.address.country }}
+                        </p>
+                    </div>
+                </div>
+                <h4 class="mt-4">Shipping Address</h4>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p>
+                            {{ order.shipping_address.first_name |title }} {{ order.shipping_address.last_name |title }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.shipping_address.address }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.shipping_address.address_2 }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.shipping_address.city }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.shipping_address.state }}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            {{ order.shipping_address.country }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+</div>
+{% endblock content %}

@@ -1,0 +1,121 @@
+<form method="POST" class="row contact_form" id='edit_address_form'>
+    {% csrf_token %}
+    <input type="hidden" name="address_id" id="edit_address_address_id" value="{{ address.id }}">
+    <div class="col-lg-12 mx-auto pt-4">
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            {{form.errors}}
+        </div>
+        {% endif %}
+        <div class="row col-md-12">
+            <div class="col-md-6 form-group p_star">
+                {{ form.first_name.label }}
+                {{ form.first_name }}
+            </div>
+
+            <div class="col-md-6 form-group p_star">
+                {{ form.last_name.label }}
+                {{ form.last_name }}
+            </div>
+        </div>
+
+        <div class="row col-md-12">
+            <div class="col-md-12 form-group p_star">
+                {{ form.email.label }}
+                {{ form.email }}
+            </div>
+
+            <div class="col-md-12 form-group p_star">
+                {{ form.address_type.label }}
+                {{ form.address_type }}
+            </div>
+            
+            <div class="col-md-12 form-group p_star">
+                {{ form.address.label }}
+                {{ form.address }}
+            </div>
+
+            <div class="col-md-12 form-group p_star">
+                {{ form.address_2.label }}
+                {{ form.address_2 }}
+            </div>
+            <div class="col-md-12 form-group p_star">
+                {{ form.country.label }}
+                {{ form.country }}
+            </div>
+            <div class="col-md-12 form-group p_star">
+                {{ form.state.label }}
+                {{ form.state }}
+            </div>
+            <div class="col-md-12 form-group p_star">
+                {{ form.city.label }}
+                {{ form.city }}
+            </div>
+            
+        </div>
+
+        <div class="row form-group text-center">
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+</form>
+<script>
+    $(document).ready(function () {
+        // var country = $('#id_country').val()
+        // var state = $('#id_state').val()
+        // var city = $('#id_city').val()
+        // console.log(country, state, city,'------address values');
+        $('#id_country').change(function () {
+            console.log('calling country');
+            // $('#id_state').val('');
+            // $('#id_city').val('');
+            var country_id = $(this).val()
+            if (country_id == '') {
+                $('#id_state').prop('disabled', true)
+                $('#id_city').prop('disabled', true)
+            }
+            else {
+                $('#id_state').prop('disabled', false);
+                $('#id_city').prop('disabled', false);
+            }
+            $.ajax({
+                type: "GET",
+                url: "{% url 'ChangeState' %}",
+                data: { 'country_id': country_id },
+                success: function (response) {
+                    $('#id_state').html(response)
+                    $('#id_state').prop('selectedIndex',1)
+                    $('#id_state').change()
+                }
+            });
+        })
+        $('#id_state').change(function () {
+            console.log('calling state');
+            var state_id = $(this).val()
+            if (state_id == '') {
+                $('#id_city').prop('disabled', true)
+            }
+            else {
+                $('#id_city').prop('disabled', false)
+            }
+            console.log(state_id)
+            $.ajax({
+                type: "GET",
+                url: "{% url 'ChangeCity' %}",
+                data: { 'state_id': state_id },
+                success: function (response) {
+                    $('#id_city').html(response)
+                    $('#id_city').prop('selectedIndex',1)
+                }
+            });
+        })
+        // console.log($('#edit_address_form').find('#id_country').val(),$('#edit_address_form').find('#id_state').val(),$('#edit_address_form').find('#id_city').val());
+        $('#id_country').val($('#edit_address_form').find('#id_country').val()).attr('selected','selected')
+        $('#id_state').val($('#edit_address_form').find('#id_state').val()).attr('selected','selected')
+        $('#id_city').val($('#edit_address_form').find('#id_city').val()).attr('selected','selected')
+    });
+    
+</script>

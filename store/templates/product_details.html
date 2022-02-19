@@ -1,0 +1,676 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block headscript %}
+<style>
+	#qty_input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+
+	}
+
+	.product-thumbs::-webkit-scrollbar {
+		/* display: none; */
+		/* padding-bottom: ; */
+		width: 2px;
+		color: #000;
+	}
+	.product-thumbs::-webkit-scrollbar-track {
+    	-webkit-box-shadow: inset 0 0 6px rgba(55, 128, 190,0.3); 
+    	box-shadow: inset 0 0 6px rgba(55, 128, 190,0.3); 
+    	border-radius: 10px;
+	}
+	.product-thumbs::-webkit-scrollbar-thumb {
+		border-radius: 10px;
+		-webkit-box-shadow: inset 0 0 6px rgba(55, 128, 190,0.5); 
+		box-shadow: inset 0 0 6px rgba(55, 128, 190,0.5); 
+	}
+	.wishlist-btn:hover > i {
+		font-size: 2.2em;
+		-webkit-transition: 200ms;
+		transition: 200ms;
+	}
+	.site-btn.disabled{
+		background-color: #3780be94;
+	}
+	.cursor-drop{
+  		cursor: no-drop;
+	}
+
+</style>
+<style>
+	.rating-stars ul {
+		list-style-type: none;
+		padding: 0;
+
+		-moz-user-select: none;
+		-webkit-user-select: none;
+	}
+
+	.rating-stars ul>li.star {
+		display: inline-block;
+
+	}
+
+	/* Idle State of the stars */
+	.rating-stars ul>li.star>i.fa {
+		font-size: 2.5em;
+		/* Change the size of the stars */
+		color: #ccc;
+		/* Color on idle state */
+	}
+
+	/* Hover state of the stars */
+	.rating-stars ul>li.star.hover>i.fa {
+		color: #3780be;
+	}
+
+	/* Selected state of the stars */
+	.rating-stars ul>li.star.selected>i.fa {
+		color: #37b0be;
+	}
+
+</style>
+<script>
+	// loading rating and user count in divs
+	function loadRating(product_id, rating_div_id, user_count_div_id) {
+		$.ajax({
+			type: "GET",
+			url: "{% url 'Rating' %}",
+			data: { 'product_id': product_id },
+			success: function (response) {
+				console.log(response)
+				rating_html = ""
+
+				// if no resonse then 
+				if (JSON.stringify(response) == "{}") {
+					for (let i = 1; i < 6; i++) {
+						rating_html += '<i class="fa fa-star-o fa-fade"></i>'
+					}
+					$("#" + user_count_div_id).html("0 reviews")
+				}
+				else {
+					var product_rating = response['rating']
+					console.log(product_rating);
+					for (let i = 1; i < 6; i++) {
+						if (i <= product_rating && i != parseInt(product_rating)) {
+							rating_html += '<i class="fa fa-star"></i>'
+						}
+						else if (i == product_rating) {
+							rating_html += '<i class="fa fa-star"></i>'
+						}
+						else if (i < product_rating && i == parseInt(product_rating)) {
+							rating_html += '<i class="fa fa-star-half-o"></i>'
+						}
+						else {
+							rating_html += '<i class="fa fa-star-o"></i>'
+						}
+					}
+					$("#" + user_count_div_id).html(response['rating_user_count'] + " reviews")
+				}
+				$("#" + rating_div_id).html(rating_html)
+			}
+		});
+	}
+
+	function userRating(rating, rating_div_id) {
+		let rating_html = ""
+		let product_rating = rating
+		console.log(rating, 'user rating');
+		for (let i = 1; i < 6; i++) {
+			if (i <= product_rating && i != parseInt(product_rating)) {
+				rating_html += '<i class="fa fa-star"></i>'
+			}
+			else if (i == product_rating) {
+				rating_html += '<i class="fa fa-star"></i>'
+			}
+			else if (i < product_rating && i == parseInt(product_rating)) {
+				rating_html += '<i class="fa fa-star-half-o"></i>'
+			}
+			else {
+				rating_html += '<i class="fa fa-star-o"></i>'
+			}
+		}
+		$("#" + rating_div_id).html(rating_html)
+	}
+</script>
+
+<script>
+	$(document).ready(function () {
+		url = window.location.pathname
+		$('.site-pagination').html('<a href="{% url "index" %}">Home</a>/')
+		$('.site-pagination').append('<a href="{% url "products" %}">All Products</a>/')
+
+		// {% for category_ancestor in product.category.get_ancestors %}
+		console.log("{{ category_ancestor }}")
+
+		$('.site-pagination').append("<a href={% url 'products' %}?category={{category_ancestor.id}}>{{ category_ancestor|title }}</a>/")
+
+		// {% endfor %}
+		$('.site-pagination').append("<a href={% url 'products' %}?category={{product.category.id}}>{{ product.category.name|title }}</a>/")
+		$('.site-pagination').append("<a href='url'>{{ product.name|title }}</a>".replace('url', url))
+	});
+</script>
+{% endblock headscript %}
+
+
+
+{% block content %}
+
+<!-- Page info -->
+<div class="page-top-info">
+	<div class="container">
+		<h4>Product Details</h4>
+		<div class="site-pagination">
+			<a href="#">Home</a> /
+			<a href="#">All Products</a>
+		</div>
+	</div>
+</div>
+<!-- Page info end -->
+
+
+<!-- product section -->
+<section class="product-section">
+	<div class="container">
+		<!-- <div class="back-link">
+			<a href="{% url 'products' %}"> &lt;&lt; Back to Category</a>
+		</div> -->
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="product-pic-zoom">
+					<img class="product-big-img" src="{{ product.product_image.url}}" alt="">
+				</div>
+				<div class="product-thumbs" tabindex="1">
+					<div class="product-thumbs-track">
+						<div class="pt active" data-imgbigurl="{{ product.product_image.url}}"><img
+								 src="{{ product.product_image.url}}" alt=""></div>
+						{% for images in product.product_multi_image_set.all %}
+						<div class="pt" data-imgbigurl="{{ images.image.url }}"><img src="{{ images.image.url }}"
+								 alt=""></div>
+						{% endfor %}
+						{% for images in product.parent.product_multi_image_set.all %}
+						<div class="pt" data-imgbigurl="{{ images.image.url }}"><img src="{{ images.image.url }}"
+								 alt=""></div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6 product-details">
+				<h2 class="p-title">{{product.name|title}}</h2>
+				<h3 class="p-price"><i class="fa fa-inr fa-xs" aria-hidden="true"></i> {{ product.price }}</h3>
+				<h4 class="p-stock">Available: 
+				{% if product.quantity > 0 %}
+					<span>In Stock</span>
+				{% else %}
+					<span style="color: red;">Out Of Stock</span>
+				{% endif %}
+					</h4>
+				<div class="p-rating" id='p-rating'>
+					<script>
+						loadRating("{{ product.id }}", 'p-rating', 'user_count_div')
+					</script>
+				</div>
+				<div class="p-review">
+					<a href="#review-tab" id="user_count_div"></a>
+					{% if product in non_review_products %}
+					|<a id='add_review_link' href="#review-tab">Add your review</a>
+					{% endif %}
+						
+				</div>
+				<div id="product_attr_div">
+				</div>
+				<form action="{% url 'addToCart' %}" method="POST">
+					{% csrf_token %}
+					<div class="quantity mb-2">
+						<p>Quantity</p>
+						<div class="pro-qty"><input type="number" id="qty_input" min="1" max='{{ product.quantity }}' value="1" name='quantity'>
+						</div>
+						
+					</div>
+					{% if product.quantity <= 5 and product.quantity > 0 %}
+						<div>
+							<h5 style="color: red;">Hurry Now, Only {{product.quantity}} left!</h5>
+						</div>
+					{% elif product.quantity == 0 %}
+						<div>
+							<h5 style="color: red;">Out Of Stock</h5>
+						</div>
+
+					{% endif %}
+					
+						
+					<input type="hidden" name="product" value="{{product.id}}">
+					<div class="form-inline mt-4" style="min-height: 55px;">
+						<button class="site-btn mr-3" id='shop_now_btn' type="button">ADD TO CART</button>
+						
+						{% if product in wishlist_products %}
+							<a class="wishlist-btn " product-id='{{ product.id }}' disabled><i class="fa fa-heart  fa-2x text-danger"></i></a>
+						{% else %}
+							<a class="wishlist-btn" product-id='{{ product.id }}'><i class="flaticon-heart fa-2x"></i></a>
+						{% endif %}
+					</div>
+					
+				</form>
+				<div id="accordion" class="accordion-area">
+					<div class="panel">
+						<div class="panel-header" id="headingOne">
+							<button class="panel-link active" data-toggle="collapse" data-target="#collapse1"
+									aria-expanded="true" aria-controls="collapse1">information</button>
+						</div>
+						<div id="collapse1" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+							<div class="panel-body">
+								<p>{{ product.description }}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="social-sharing">
+					<a target="_blank"
+					   href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2F127.0.0.1%3A8000%2Forders%2F&amp;src=sdkpreparse"
+					   data-href="{{ request.build_absolute_uri }}{{ object.get_absolute_url }}" data-layout="button"
+					   data-size="large"><i class="fa fa-facebook fa-2x"></i></a>
+					<a target="_blank"
+					   href="https://twitter.com/intent/tweet?text=Buy%20new%20product%20&url={{ request.build_absolute_uri }}{{ object.get_absolute_url }}"><i
+						   class="fa fa-twitter fa-2x"></i></a>
+					<a id='id_linkedin_link' target="_blank" href=""><i class="fa fa-linkedin fa-2x"
+						   aria-hidden="true"></i></a>
+					<a id='id_mail_link' target="_blank" href=""><i class="fa fa-envelope-o fa-2x"></i></a>
+				</div>
+			</div>
+		</div>
+
+		<!-- review panel -->
+		<div class="row mt-5">
+			<div class="col-12">
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item" role="presentation">
+						<a class="nav-link active" id="description-tab" data-toggle="tab" href="#description" role="tab"
+						   aria-controls="description" aria-selected="true">Description</a>
+					</li>
+					<!-- <li class="nav-item" role="presentation">
+						  <a class="nav-link" id="details-tab" data-toggle="tab" href="#details" role="tab" aria-controls="details" aria-selected="false">Details</a>
+						</li> -->
+					<li class="nav-item" role="presentation">
+						<a class="nav-link" id="review-tab" data-toggle="tab" href="#reviews" role="tab"
+						   aria-controls="reviews"
+						   aria-selected="false">Reviews</a>
+					</li>
+				</ul>
+				<div class="tab-content" id="myTabContent">
+					<div class="tab-pane fade show active" id="description" role="tabpanel"
+						 aria-labelledby="description-tab">
+						<div class="col-12">
+							<div class="col-8 mt-4">
+								<p style="font-size: 20px;">{{ product.description }}</p>
+							</div>
+						</div>
+					</div>
+					<!-- <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
+						<div class="col-8 mt-4">test</div>
+					</div> -->
+					<div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="review-tab">
+						<div class="col-12">
+							<div class="row">
+								
+								{% if product.parent.productreview_set.count > 0 %}
+								
+								{% for review in product.parent.productreview_set.all %}
+								<div class="col-12 mt-4">
+									<div class="row">
+										<div class="col-lg-2 col-md-5 col-sm-12"><img
+												 src="{{ review.user.userprofile.image.url }}"
+												 class="rounded-circle"
+												 style="overflow: hidden;" height="100px" width="100px"
+												 alt=""></div>
+										<div class="col-lg-10 col-md-7 col-sm-12 m-auto">
+											<div class="row">
+												<div class="col-3">
+													<p style="font-size: 18px;">{{ review.user.first_name|title }}
+														{{ review.user.last_name|title }}</p>
+												</div>
+												<div class="col-3"><p style="font-size: 18px;">{{ review.review_date|date:"d M Y" }} </p></div>
+												<div class="col-3 product-details">
+													<p style="font-size: 18px;" class="p-rating" id='review{{review.id}}'>
+														<script>
+															userRating("{{ review.review_rating }}", 'review{{review.id}}');
+														</script>
+													</p>
+												</div>
+											</div>
+											<!-- <div class="row mt-2">
+												<div class="col-12">
+													<h6 style="font-weight: 600;">{{ review.review_heading }}</h6>
+												</div>
+											</div> -->
+											<div class="row">
+												<div class="col-12">
+													<p style="font-size: 16px;">{{ review.review_description }}</p>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{% if forloop.counter != product_review|length %}
+									<div class="row">
+										<div class="col-12">
+											<hr>
+										</div>
+									</div>
+									{% endif %}
+								</div>
+								{% endfor %}
+								{% else %}
+									<div class="col-12 mt-5 d-flex justify-content-center"><h5 style="font-weight: 400;">No Reviews Available</h5></div>
+								{% endif %}
+									
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- product section end -->
+
+
+<!-- RELATED PRODUCTS section -->
+<!-- <section class="related-product-section">
+		<div class="container">
+			<div class="section-title">
+				<h2>RELATED PRODUCTS</h2>
+			</div>
+			<div class="product-slider owl-carousel">
+				<div class="product-item">
+					<div class="pi-pic">
+						<img src="{% static 'img/product/1.jpg' %}" alt="">
+						<div class="pi-links">
+							<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+							<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
+						</div>
+					</div>
+					<div class="pi-text">
+						<h6>$35,00</h6>
+						<p>Flamboyant Pink Top </p>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	</section> -->
+<!-- RELATED PRODUCTS section end -->
+
+
+{% endblock content %}
+
+
+
+{% block endscript %}
+<script>
+	$(document).ready(function () {
+		$(document).on('click', '#shop_now_btn', function(){
+			let quantity = $('#qty_input').val()
+			console.log(quantity);
+			addToCart('{{product.id}}',quantity,'CartIndex')
+		})
+	});
+</script>
+
+<!-- disable shop now button if product is out of stock -->
+<script>
+	$(document).ready(function () {
+		// {% if product.quantity <= 0 %}
+				$('#shop_now_btn').attr('disabled','disabled')
+				$('#shop_now_btn').addClass('disabled cursor-drop')
+		// {% endif %}
+	});
+</script>
+
+<!-- when #review-tab is in URL then open review tab -->
+<script>
+	$(document).ready(function () {
+		let href = new URL(window.location.href);
+		if(href.href.search('#review-tab') != -1){
+			$('#review-tab').click()
+		}
+		$('#add_review_link').click(function(){
+			$('#review-tab').click()
+
+		})
+	});
+</script>
+
+<!-- quantity button press change input value -->
+<script>
+	var proQty = $('.pro-qty');
+	proQty.prepend('<span class="dec qtybtn">-</span>');
+	proQty.append('<span class="inc qtybtn">+</span>');
+	proQty.on('click', '.qtybtn', function () {
+		var $button = $(this);
+		var oldValue = $button.parent().find('input').val();
+		if ($button.hasClass('inc')) {
+			if( oldValue >= parseInt("{{ product.quantity }}")){
+				var newVal = oldValue
+			}
+			else{
+			var newVal = parseInt(oldValue) + 1;
+
+			}
+		} else {
+			// Don't allow decrementing below zero
+			if (oldValue > 1) {
+				var newVal = parseInt(oldValue) - 1;
+			} else {
+				newVal = 1;
+			}
+		}
+		$button.parent().find('input').val(newVal);
+		// console.log($('#qty_input').val())
+	});
+</script>
+
+
+<!-- loading review rating mouse drag star select js -->
+<script>
+
+	$(document).ready(function () {
+
+		/* 1. Visualizing things on Hover - See next part for action on click */
+		$('#stars li').on('mouseover', function () {
+			var onStar = parseInt($(this).data('value'), 10); // The star currently mouse on
+
+			// Now highlight all the stars that's not after the current hovered star
+			$(this).parent().children('li.star').each(function (e) {
+				if (e < onStar) {
+					$(this).addClass('hover');
+				}
+				else {
+					$(this).removeClass('hover');
+				}
+			});
+
+		}).on('mouseout', function () {
+			$(this).parent().children('li.star').each(function (e) {
+				$(this).removeClass('hover');
+			});
+		});
+
+
+		/* 2. Action to perform on click */
+		$('#stars li').on('click', function () {
+			var onStar = parseInt($(this).data('value'), 10); // The star currently selected
+			var stars = $(this).parent().children('li.star');
+
+			for (i = 0; i < stars.length; i++) {
+				$(stars[i]).removeClass('selected');
+			}
+			for (i = 0; i < onStar; i++) {
+				$(stars[i]).addClass('selected');
+			}
+			// JUST RESPONSE (Not needed)
+			var ratingValue = parseInt($('#stars li.selected').last().data('value'), 10);
+			console.log(ratingValue)
+			$('#id_review_rating').val(ratingValue)
+		});
+	});
+
+</script>
+
+
+<!-- for loading data in social media share icons -->
+<script>
+	var fullurl = 'https://www.linkedin.com/sharing/share-offsite/?url='
+	var encodedurl = encodeURIComponent('{{ request.build_absolute_uri }}{{ object.get_absolute_url }}')
+	$('#id_linkedin_link').attr('href', fullurl + encodedurl)
+	$('#id_mail_link').attr('href', 'mailto:?subject=' + encodeURIComponent('checkout this product') + '&body=' + encodeURIComponent('buy this product {{ request.build_absolute_uri }}{{ object.get_absolute_url }}'))
+</script>
+
+<!-- product varient filter loading and adding in html like size, color ect -->
+<script>
+	var attribute_dict = {}
+
+	// {% for varient in product_varient %}
+	// {% for m2m in varient.varient_property.all %}
+
+	if (attribute_dict["{{ m2m.productAttribute.name}}"] == undefined) {
+		attribute_dict['{{ m2m.productAttribute.name }}'] = []
+	}
+	if (attribute_dict["{{ m2m.productAttribute.name}}"] != undefined) {
+
+		// checking if this array is already present in array of array
+		var is_already_present = false
+		for (data of attribute_dict["{{ m2m.productAttribute.name }}"]) {
+			if (JSON.stringify(data) == JSON.stringify([parseInt("{{m2m.id}}"), "{{m2m.value}}"])) {
+				is_already_present = true
+			}
+		}
+
+		// if not present then add
+		if (is_already_present == false) {
+			attribute_dict["{{ m2m.productAttribute.name }}"].push(Object([parseInt("{{ m2m.id }}"), "{{ m2m.value }}"]))
+		}
+	}
+	// {% endfor %}
+	// {% endfor %}
+
+
+	console.log(attribute_dict)
+
+	var html_creator = ""
+	for (data in attribute_dict) {
+		if (data.toLowerCase() == 'color') {
+			temp_html_creator = ""
+			var main_div = document.createElement('DIV')
+			if(attribute_dict[data].length <= 1){
+				main_div.setAttribute('class', 'fw-size-choose d-none')
+			}
+			else{
+				main_div.setAttribute('class', 'fw-size-choose')
+			}
+			// main_div.setAttribute('style','border-bottom: 2px solid #ebebeb; padding-bottom: 40px; margin-bottom: 50px;')
+			for (attribute of attribute_dict[data]) {
+				var x = document.createElement('INPUT')
+				var y = document.createElement('label')
+				x.setAttribute('value', attribute[1])
+				x.setAttribute('id', data + attribute[0])
+				x.setAttribute('name', data)
+				x.setAttribute('type', 'radio')
+				y.setAttribute('for', data + attribute[0])
+				y.setAttribute('style', 'background:' + attribute[1] + ';')
+				var z = document.createElement('DIV')
+				z.setAttribute('class', 'sc-item color-class')
+				// y.innerHTML = "<div style='height:15px; width=15px; background:color; border-radius:50%';>".replace('color',attribute[1])
+				// y.innerHTML = attribute[1]
+
+
+				// {% for attr in product.varient_property.all %}
+				if ("{{attr.value}}" == attribute[1]) {
+					x.setAttribute('checked', '')
+				}
+				// {% endfor %}
+				z.innerHTML = x.outerHTML + y.outerHTML
+				temp_html_creator += z.outerHTML
+			}
+			main_div.innerHTML = "<p class='col-2'>" + data + "</p>" + temp_html_creator
+			temp_html_creator = main_div.outerHTML
+
+			// html_creator += temp_html_creator
+		}
+		else {
+			temp_html_creator = ""
+			for (attribute of attribute_dict[data]) {
+				var x = document.createElement('INPUT')
+				var y = document.createElement('label')
+				x.setAttribute('value', attribute[1])
+				x.setAttribute('id', data + attribute[0])
+				x.setAttribute('name', data)
+				x.setAttribute('type', 'radio')
+				y.setAttribute('for', data + attribute[0])
+				y.innerHTML = attribute[1]
+
+
+				// {% for attr in product.varient_property.all %}
+				if ("{{attr.value}}" == attribute[1]) {
+					x.setAttribute('checked', '')
+				}
+				// {% endfor %}
+				temp_html_creator += "<div class='sc-item'>" + x.outerHTML + y.outerHTML + "</div>"
+			}
+			console.log(attribute_dict[data].length,data);
+			if(attribute_dict[data].length <= 1){
+				temp_html_creator = "<div class='fw-size-choose d-none'><p class='col-2'>" + data + "</p>" + temp_html_creator + "</div>"
+			}
+			else{
+				temp_html_creator = "<div class='fw-size-choose'><p class='col-2'>" + data + "</p>" + temp_html_creator + "</div>"
+			}
+
+		}
+		html_creator += temp_html_creator
+	}
+	$('#product_attr_div').html(html_creator);
+</script>
+
+<script>
+
+	function attribute_value_getter() {
+		attr_list = []
+		$('#product_attr_div').children('.fw-size-choose').each(function () {
+			// console.log($(this).html());
+			$(this).children('.sc-item').each(function () {
+				// console.log($(this).html());
+				if ($(this).children('input').is(':checked')) {
+					console.log($(this).children('input').val())
+					attr_list.push($(this).children('input').val())
+				}
+			})
+		})
+		return attr_list
+	}
+
+	function product_renderer(attr_list) {
+		// {% for product in product_varient %}
+		var is_product_available = true
+		// {% for m2m in product.varient_property.all %}
+		if ("{{m2m.value}}" != attr_list["{{forloop.counter0}}"]) {
+			is_product_available = false
+		}
+		// {% endfor %}
+		if (is_product_available == true) {
+			window.location.href = "{% url 'product_detail_view' product.id %}"
+		}
+		// {% endfor %}
+	}
+
+
+	$(document).ready(function () {
+		$('.sc-item').click(function (e) {
+			console.log('attr click')
+			var attr_list = attribute_value_getter()
+			console.log(attr_list)
+			product_renderer(attr_list)
+		});
+	})
+</script>
+{% endblock endscript %}

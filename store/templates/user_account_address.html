@@ -1,0 +1,212 @@
+{% load extra_tag %}
+<div class="tab-pane fade" id="v-pills-address" role="tabpanel" aria-labelledby="v-pills-address-tab">
+    <div class="row d-flex justify-content-center align-items-center mt-4 mb-5" id='address_div' style="min-height: 300px;">
+        
+        {% if userAddresses.count > 0 %}
+            <div class="col-12">
+                <div class="site-btn mb-3" data-toggle="modal" class="d-inline" id='add_address_button' onclick="addAddress()" data-target="#add_address_model" style="cursor: pointer;">
+                    <i class="fa fa-plus-circle fa-lg mr-2" aria-hidden="true"></i>
+                    <span> Add Address</span>
+                </div>
+            </div>
+            
+            {% if userAddresses|shipping_address_count > 0 %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header"><h5>Shipping Addresses</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for address in userAddresses %}
+                                    
+                                    {% if address.address_type == 'S' or address.address_type == 'S&B' %}
+                                        
+                                        {% if address.default_shipping != True %}
+                                            <div class="col-lg-4 col-md-6 col-sm-12 border mb-2 address_col_div" style="min-height: 175px;">
+                                        {% else %}
+                                            <div class="col-lg-4 col-md-6 col-sm-12 mb-2 address_col_div" style="min-height: 175px; border: 2px solid #4cae4c;">
+                                        {% endif %}
+                                            
+                                            <!-- <div class="row d-flex align-items-center" style="background-color: #3780be; min-height: 30px;">
+                                                <div class="col-lg-9 d-flex align-items-center col-md-8" style="color: white;">
+                                                    
+                                                    {% if address.default_shipping == True %}
+                                                        <h6 class="mb-0">>Default</h6>
+                                                    {% endif %}
+                                                            
+                                                </div>
+                                                <div class="col-lg-3 d-flex align-items-center p-0 col-md-4">
+                                                    <a href="#" type="button" address-id="{{ address.id}}" id="edit_address_btn_id_{{address.id}}" class="edit_address_btn_class pr-2" data-toggle="modal" data-target="#edit_address_model"><i class="fa fa-pencil fa-lg" style="color: white;" aria-hidden="true"></i></a>
+                                                    <a href="#" address-id="{{ address.id}}" id='remove_address_btn_id_{{ address.id }}' class="remove_address_class"><i class="fa fa-trash fa-lg" style="color: white;" aria-hidden="true"></i></a>
+                                                </div>
+                                            </div> -->
+                                            <div class="row">
+                                                {% if address.default_shipping != True %}
+                                                    <div class="col-12 d-flex justify-content-center align-items-center" style="background-color: #3780be; color: white;">
+                                                {% else %}
+                                                    <div class="col-12 d-flex justify-content-center align-items-center" style="color: #fff; background-color: #5cb85c; border-color: #4cae4c;">
+                                                {% endif %}
+                                                    <h5 class="mb-0 pb-1 pt-1">{{ address.first_name|title }} {{ address.last_name|title }}</h5>
+                                                </div>
+                                                <div class="col-12 mt-2">
+                                                    <h6>{{address.address|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.address_2|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.city|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.state|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.country|title }}</h6>
+                                                </div>
+                                                <div class="col-12" style="min-height: 35px;">
+                                                    <div class="row ">
+                                                        <div class="col-9">
+                                                            {% if address.default_shipping != True  %}
+                                                            <a onclick="setDefaultAddress('{{address.id}}')" class="btn btn-primary btn-sm set_default_button" style="color: white; background-color: #3780be;">Set Default</a>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="col-lg-3 d-flex align-items-center p-0 col-md-4">
+                                                            <a href="#" type="button" address-id="{{ address.id}}" id="edit_address_btn_id_{{address.id}}" class="edit_address_btn_class pr-2" data-toggle="modal" data-target="#edit_address_model"><i class="fa fa-pencil fa-lg" style="color: #3780be;" aria-hidden="true"></i></a>
+                                                            <a href="#" address-id="{{ address.id}}" id='remove_address_btn_id_{{ address.id }}' class="remove_address_class"><i class="fa fa-trash fa-lg" style="color: #3780be;" aria-hidden="true"></i></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- <div class="row" style="background-color: #3780be;">
+                                                <div class="col-12">
+                                                    <a href="#" style="color:white; text-decoration: none;">Make Default </a>
+                                                </div>
+                                            </div> -->
+                                            
+                                        </div>
+                                    {% endif %}
+                                        
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if userAddresses|billing_address_count > 0 %}
+                <div class="col-12 mt-4">
+                    <div class="card">
+                        <div class="card-header"><h5>Billing Addresses</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for address in userAddresses %}
+                                    {% if address.address_type == 'B' or address.address_type == 'S&B' %}
+                                        {% if address.default_billing != True %}
+                                            <div class="col-lg-4 col-md-6 col-sm-12 border mb-2 address_col_div" style="min-height: 175px;">
+                                        {% else %}
+                                            <div class="col-lg-4 col-md-6 col-sm-12 mb-2 address_col_div" style="min-height: 175px; border: 2px solid #4cae4c;">
+                                        {% endif %}
+                                            <div class="row">
+                                                {% if address.default_billing != True %}
+                                                    <div class="col-12 d-flex justify-content-center align-items-center" style="background-color: #3780be; color: white;">
+                                                {% else %}
+                                                    <div class="col-12 d-flex justify-content-center align-items-center" style="color: #fff; background-color: #5cb85c; border-color: #4cae4c;">
+                                                {% endif %}
+                                                    <h5 class="mb-0 pb-1 pt-1">{{ address.first_name|title }} {{ address.last_name|title }}</h5>
+                                                    </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.address|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.address_2|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.city|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.state|title }}</h6>
+                                                </div>
+                                                <div class="col-12">
+                                                    <h6>{{address.country|title }}</h6>
+                                                </div>
+                                                <div class="col-12" style="min-height: 35px;">
+                                                    <div class="row ">
+                                                        <div class="col-9">
+                                                            {% if address.default_billing != True %}
+                                                                <a onclick="setDefaultAddress('{{address.id}}')" class="btn btn-primary btn-sm set_default_button" style="color: white; background-color: #3780be;">Set Default</a>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="col-lg-3 d-flex align-items-center p-0 col-md-4">
+                                                            <a href="#" type="button" address-id="{{ address.id}}" id="edit_address_btn_id_{{address.id}}" class="edit_address_btn_class pr-2" data-toggle="modal" data-target="#edit_address_model"><i class="fa fa-pencil fa-lg" style="color: #3780be;" aria-hidden="true"></i></a>
+                                                            <a href="#" address-id="{{ address.id}}" id='remove_address_btn_id_{{ address.id }}' class="remove_address_class"><i class="fa fa-trash fa-lg" style="color: #3780be;" aria-hidden="true"></i></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="row" style="background-color: #3780be;">
+                                                <div class="col-12">
+                                                    <a href="#" style="color:white; text-decoration: none;">Make Default </a>
+                                                </div>
+                                            </div> -->
+                                            
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="col-6 border d-flex justify-content-center align-items-center" data-toggle="modal" id='add_address_button' data-target="#add_address_model" onclick="addAddress()" style="cursor: pointer; min-height: 300px; min-width: 300px;">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-12 d-flex justify-content-center">
+                        <i class="fa fa-plus fa-4x" aria-hidden="true"></i>
+                    </div>
+                    <div class="col-12 d-flex justify-content-center">
+                        <h5>Add Address</h5>
+                    </div>
+                </div>
+            </div>
+            
+        {% endif %}
+        <!-- model for add address  -->
+        <div class="modal fade" id="add_address_model" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Address</h5>
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id='add_address_modal_body'>
+                        Body
+                    </div>
+                </div>
+            </div>
+        </div> 
+       
+        <!-- edit button Modal -->
+        <div class="modal fade" id="edit_address_model" tabindex="-1" role="dialog"
+        aria-labelledby="modelTitleId" aria-hidden="true">
+       <div class="modal-dialog" role="document">
+           <div class="modal-content">
+               <div class="modal-header">
+                   <h5 class="modal-title">Edit Address</h5>
+                   <button type="button" class="close" data-dismiss="modal"
+                           aria-label="Close">
+                       <span aria-hidden="true">&times;</span>
+                   </button>
+               </div>
+               <div class="modal-body">
+                   <div class="container-fluid" id="edit_address_body">
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+    </div>
+</div>

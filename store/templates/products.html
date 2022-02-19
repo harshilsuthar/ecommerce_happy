@@ -1,0 +1,688 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load extra_tag %}
+
+{% block headscript %}
+
+<style>
+	.remove_filter:hover > .fa-times-circle{
+        color: red;
+    }
+    .remove_filter{
+        cursor: pointer;
+    }
+</style>
+	
+{% endblock headscript %}
+	
+
+{% block content %}
+
+<!-- Page info -->
+<style></style>
+<div class="page-top-info">
+	<div class="container">
+		<h4>Products</h4>
+		<div class="site-pagination">
+			<a href="{% url 'index' %}">Home</a> /
+			<a href="{% url 'products' %}">All Products</a>
+		</div>
+	</div>
+</div>
+<!-- Page info end -->
+
+
+<!-- Category section -->
+<section class="category-section spad">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-3 order-1 order-lg-1">
+				<div id='filter_div' class="mb-4"></div>
+				<div class="filter-widget" id='category_filter'>
+					<h2 class="fw-title"><a href="{% url 'products' %}">Categories</a></h2>
+					{% for category, info in categories %}
+					
+					{% if category|is_category_available %}
+						
+					{% endif %}
+						
+						{% if info.open %}
+							{% if category.is_root %}
+								<ul class="category-menu" >
+								{% if category|is_category_available %}
+								<li>
+								{% endif %}
+
+							{% else %}
+								<ul class="sub-menu category-menu" >
+								{% if category|is_category_available %}
+									<li>
+								{% endif %}
+
+							{% endif %}
+						{% else %}
+						{% if category|is_category_available %}
+							</li><li>
+						{% endif %}
+
+						{% endif %}
+						{% if category|is_category_available %}
+							<a href="{% url 'products' %}?category={{ category.id }}">{{ category|title }}</a>
+						{% endif %}
+						
+						{% for close in info.close %}
+						{% if category|is_category_available %}
+							</li>
+						{% endif %}
+						
+						</ul>
+						{% endfor %}
+					{% endfor %}
+				</div>
+				<div class="filter-widget mb-0" id='price_filter'>
+					<h2 class="fw-title">Price</h2>
+					<div class="price-range-wrap">
+						<div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content" data-min="{{ set_min_price }}" data-max="{{ set_max_price }}">
+							<div class="ui-slider-range ui-corner-all ui-widget-header" style="left: 0%; width: 100%;"></div>
+							<span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default" style="left: 0%;">
+							</span>
+							<span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default" style="left: 100%;">
+							</span>
+						</div>
+						<div class="range-slider">
+							<div class="price-input">
+								<input type="text" id="minamount">
+								<input type="text" id="maxamount">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="filter-widget mb-5">
+					
+					{% for product_attribute in product_attribute_list %}
+						{% if product_attribute.add_to_filter and product_attribute.available %}
+							
+							{% if product_attribute.name|title == 'Color' %}
+								<div class="fw-color-choose">
+									<h2 class="fw-title">{{product_attribute.category.name|safe|title }} {{product_attribute.name|safe|title}}</h2>
+									{% for attribute_value in product_attribute.attributevalue_set.all %}
+										{% if attribute_value.available and attribute_value in current_category|attribute_filter %}
+										<div class="cs-item" title='{{ attribute_value.value }}'>
+											<input type="checkbox" name='tag-color' class="product_attribute" product_attribute_name="{{ product_attribute.id }}" product_attribute_value="{{ attribute_value.id }}" id="{{product_attribute}}-{{attribute_value}}-color">
+											<label for="{{product_attribute}}-{{attribute_value}}-color" style="background-color:{{ attribute_value.value }};">
+												<!-- <span>(3)</span> -->
+											</label>
+										</div>
+										{% endif %}
+									{% endfor %}
+								</div>
+							{% else %}
+							<div class="filter-widget mb-5">
+								<h2 class="fw-title">{{product_attribute.category.name|safe|title }} {{product_attribute.name|safe|title}}</h2>
+								<div class="category-menu">
+									{% for attribute_value in product_attribute.attributevalue_set.all %}
+									
+										{% if attribute_value.available and attribute_value in current_category|attribute_filter %}
+											<li title="{{ attribute_value.value }}">
+												<a id="product_attribute_id_{{attribute_value.id}}" class='product_attribute' product_attribute_name="{{ tag_name.id }}" product_attribute_value="{{ attribute_value.id }}" id="{{ product_attribute }}-{{ attribute_value }}-color">{{ attribute_value.value }}</a>
+											</li>
+										{% endif %}
+									{% endfor %}
+								</div>
+							</div>
+							{% endif %}
+								
+						{% endif %}
+							
+					{% endfor %}
+						
+					{% for tag_name in product_tags %}
+						{% if tag_name.available and tag_name.is_tag_value_available %}
+							{% if tag_name.name|title == 'Color' %}
+								<div class="fw-color-choose">
+									<h2 class="fw-title">color by</h2>
+									{% for tag_value in tag_name.tagvalue_set.all %}
+										{% if tag_value.available and tag_value in current_category|tag_filter %}
+										<div class="cs-item" title='{{ tag_value.value }}'>
+											<input type="checkbox" name='tag-color' class="product_tag" product_tag_name="{{ tag_name.id }}" product_tag_value="{{ tag_value.id }}" id="{{tag_name}}-{{tag_value}}-color">
+											<label for="{{tag_name}}-{{tag_value}}-color" style="background-color:{{ tag_value.value }};">
+												<!-- <span>(3)</span> -->
+											</label>
+										</div>
+										{% endif %}
+									{% endfor %}
+								</div>
+							
+							{% elif tag_name.is_tag_value_available and tag_name.name|title == 'Size' %}
+								<div class="filter-widget mb-5">
+									<h2 class="fw-title">Size</h2>
+									<div class="fw-size-choose">
+										{% for tag_value in tag_name.tagvalue_set.all %}
+											{% if tag_value.available and tag_value in current_category|tag_filter %}
+												<div class="cs-item" title='{{ tag_value.value }}'>
+													<input type="checkbox" class="product_tag" product_tag_name="{{ tag_name.id }}" product_tag_value="{{ tag_value.id }}" id="{{tag_name}}-{{tag_value}}-size">
+													<label for="{{tag_name}}-{{tag_value}}-size">
+														<span>(3)</span>
+													</label>
+												</div>
+												
+											{% endif %}
+										{% endfor %}
+									</div>
+								</div>
+							{% else %}
+								<div class="filter-widget mb-5">
+									<h2 class="fw-title">{{tag_name|safe|title}}</h2>
+									<div class="category-menu">
+										{% for tag_value in tag_name.tagvalue_set.all %}
+											{% if tag_value.available and tag_value in current_category|tag_filter %}
+												<li title="{{ tag_value.value }}">
+													<a id="product_tag_id_{{tag_value.id}}" class='product_tag' product_tag_name="{{ tag_name.id }}" product_tag_value="{{ tag_value.id }}" id="{{ tag_name }}-{{ tag_value }}-color">{{ tag_value.value }}</a>
+												</li>
+											{% endif %}
+										{% endfor %}
+									</div>
+								</div>
+							{% endif %}
+						{% endif %}
+					{% endfor %}
+				</div>
+				<div class="filter-widget" id='brand_filter'>
+					<h2 class="fw-title">Brand</h2>
+					<ul class="category-menu">
+						{% for brand in brands %}
+						<li class="brand-list-item">
+							<div class="row">
+								<div class="col-11 pr-0">
+									<a id='brand_a{{brand.id}}' title="{{ brand.name|title }}" brand-id={{ brand.id }}>{{ brand.name }}</a>
+								</div>
+								<div class="col-1 p-0 d-flex align-items-center">
+									<span>({{brand.product_count}})</span>
+								</div>
+							</div>
+						</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</div>
+
+			<div class="col-lg-9 order-2 order-lg-2 mb-5 mb-lg-0">
+				
+					
+					{% if products|length != 0 %}
+					<div class="row" id='product_div' style="min-height: 700px;">
+						{% for product in products %}
+						<div class="col-lg-3 col-sm-6" id='product_div{{product.id}}'>
+						<div class="product-item">
+							<div class="pi-pic">
+								
+								<a href="{% url 'product_detail_view' product.get_first_child.id %}"><img src="{{ product.product_image.url }}" alt=""></a>
+								<div class="pi-links">
+									
+									{% if product.get_first_child.quantity > 0 %}
+										
+										{% if product.product_set.count > 1 %}
+											<a href="{% url 'product_detail_view' product.get_first_child.id %}" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+										{% else %}
+											<a onclick="addToCart('{{product.get_first_child.id}}',1,'')" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+										{% endif %}
+											
+									{% endif %}
+										
+									{% if product.get_first_child in wishlist_products %}
+									<a class="wishlist-btn" product-id='{{ product.id }}' disabled><i class="fa fa-heart text-danger"></i></a>
+									{% else %}
+									<a class="wishlist-btn" product-id='{{ product.id }}'><i class="flaticon-heart"></i></a>
+									{% endif %}
+								</div>
+							</div>
+							<div class="pi-text">
+								<div class="row d-flex justify-content-center">
+									<div class="col-12 d-flex justify-content-center">
+										<p title="{{ product.name|title }}">{{ product.name|title }}</p>
+									</div>
+									<div class="col-12 d-flex justify-content-center">
+										<h6><i class="fa fa-inr fa-xs" aria-hidden="true"></i> {{ product.price }}</h6>
+									</div>
+								</div>
+								<!-- <h6><i class="fa fa-inr fa-xs" aria-hidden="true"></i> {{ product.price }}</h6>
+								<p title="{{ product.name|title }}">{{ product.name|title }}</p> -->
+							</div>
+						</div>
+						</div>
+						<!-- if product have next or previeous page then show pagination -->
+						{% endfor %}
+					</div>
+					<div class="row">
+						{% if products.has_previous or products.has_next %}	
+							<div class="col-12 d-flex justify-content-center" style="position: relative; margin-top: 70px;">
+								<nav aria-label="Page navigation">   <ul class="pagination">
+									{% if products.has_previous %}
+									<li class="page-item">
+										<a class="page-link" onclick="changePage(1)" aria-label="Previous">
+										<span aria-hidden="true">First</span>
+										<span class="sr-only">begin</span>
+										</a>
+									</li>   {% endif %}
+									
+									{% for n in products.paginator.page_range %}
+										{% if products.number == n %}
+										<li class="page-item active">
+											<span class="page-link">{{ n }}<span class="sr-only">(current)</span></span>
+										</li>
+										{% elif n > products.number|add:'-3' and n < products.number|add:'3' %}
+										<li class="page-item"><a class="page-link" onclick="changePage('{{ n }}')">{{ n }}</a></li>
+										{% endif %}
+									{% endfor %}
+									
+									{% if products.has_next %}
+										<li class="page-item">
+										<a class="page-link" onclick="changePage('{{ products.paginator.num_pages }}')" aria-label="Next">
+											<span aria-hidden="true">Last</span>
+											
+										</a>
+										</li>
+										{% endif %}   </ul> </nav>
+							</div>
+						{% endif %}
+					</div>
+					
+					{% else %}
+					<div class="row" id='product_div' style="min-height: 700px;">
+						<div class="col-12 alert d-flex justify-content-center">
+							<img src="{% static 'img/no-product-found.jpg' %}" alt="" srcset="">
+						</div>
+						<div class="col-12 mt-2 d-flex justify-content-center" style="bottom:35px">
+							<a class="site-btn" href="{% url 'products' %}">Back To Products</a>
+						</div>
+						<script>
+							$(function () {
+								$('#brand_filter').addClass('d-none')
+								$('#price_filter').addClass('d-none')
+								$('#filter_div').addClass('d-none')
+							});
+						</script>
+					</div>
+					{% endif %}
+						
+					
+					<!-- <div class="text-center w-100 pt-3">
+						<button class="site-btn sb-line sb-dark">LOAD MORE</button>
+					</div> -->
+			</div>
+		</div>
+	</div>
+	
+</section>
+<!-- Category section end -->
+	
+{% endblock content %}
+
+
+
+{% block endscript %}
+
+<!-- tag filter -->
+<script>
+	$(document).ready(function () {
+		var href = new URL(window.location.href);
+		var product_tag = href.searchParams.get('product_tag')
+		// product_tag = decodeURIComponent(product_tag)
+		if ((product_tag) == null){
+			product_tag = []
+		}
+		else if(product_tag.replace(/^\s+|\s+$/g, '') == ''){
+			product_tag = []
+		}
+		else{
+			product_tag = product_tag.replace(/^\s+|\s+$/g, '').replaceAll('"','').split('_')
+		}
+		console.log(product_tag,'-----product tag list');
+
+		for(product_tag_id of product_tag){
+			console.log(product_tag_id)
+			$('.product_tag').each(function(){
+				if($(this).attr('product_tag_value') == product_tag_id){
+					$(this).attr('checked','checked')	
+					document.styleSheets[2].addRule('#product_tag_id_number:after'.replace('number',product_tag_id),'content: "✓";font-weight: 600;color: #3780be;font-size: 12px;padding-left: 2px;')
+					// console.log(document.styleSheets[2]);
+				}
+			})
+		}
+
+		$(document).on('click','.product_tag', function() {
+			let selected_tag = $(this).attr('product_tag_value')
+			console.log(typeof(product_tag))
+			console.log(product_tag)
+			if ((product_tag) == null){
+				product_tag = []
+			}
+			
+			if (product_tag.length == 0){
+				console.log('null');
+				product_tag.push(selected_tag)
+			}
+			else{
+				// console.log(brand.indexOf(2))
+				if(product_tag.indexOf(selected_tag) != -1){
+					product_tag.splice(product_tag.indexOf(selected_tag),1)
+				}
+				else{
+					product_tag.push(selected_tag)
+				}
+				
+			}
+			product_tag = product_tag.join('_')
+			href.searchParams.set('product_tag',product_tag)
+			window.location.href = href.toString()
+			console.log(product_tag);
+			$('.product_tag:checked').each(function(){
+				console.log($(this).attr('product_tag_name'), $(this).attr('product_tag_value'));
+			})
+			if($('.product_tag').parent('li').hasClass('active')){
+				console.log($(this).attr('product_tag_name'), $(this).attr('product_tag_value'));
+			}
+			
+		})
+	});
+</script>
+
+
+<!-- attribute filter -->
+<script>
+	$(document).ready(function () {
+		var href = new URL(window.location.href);
+		let product_attribute = href.searchParams.get('product_attribute')
+		if ((product_attribute) == null){
+			product_attribute = []
+		}
+		else if (product_attribute.replace(/^\s+|\s+$/g, '') == ''){
+			product_attribute = []
+		}
+		else{
+			product_attribute = product_attribute.replace(/^\s+|\s+$/g, '').replaceAll('"','').split('_')
+		}
+		console.log(product_attribute,'procut attribute');
+
+		for(product_attribute_id of product_attribute){
+			console.log(product_attribute_id)
+			$('.product_attribute').each(function(){
+				if($(this).attr('product_attribute_value') == product_attribute_id){
+					$(this).attr('checked','checked')	
+					document.styleSheets[2].addRule('#product_attribute_id_number:after'.replace('number',product_attribute_id),'content: "✓";font-weight: 600;color: #3780be;font-size: 12px;padding-left: 2px;')
+					// console.log(document.styleSheets[2]);
+				}
+			})
+		}
+
+		$(document).on('click','.product_attribute', function() {
+			selected_tag = $(this).attr('product_attribute_value')
+			console.log(typeof(product_attribute))
+			console.log(product_attribute,'------product attribute')
+			if ((product_attribute) == null){
+				product_attribute = []
+			}
+			if (product_attribute.length == 0){
+				console.log('null');
+				product_attribute.push(selected_tag)
+			}
+			else{
+				// console.log(brand.indexOf(2))
+				if(product_attribute.indexOf(selected_tag) != -1){
+					product_attribute.splice(product_attribute.indexOf(selected_tag),1)
+				}
+				else{
+					product_attribute.push(selected_tag)
+				}
+				
+			}
+			product_attribute = product_attribute.join('_')
+			href.searchParams.set('product_attribute',product_attribute)
+			window.location.href = href.toString()
+			console.log(product_attribute);
+			$('.product_attribute:checked').each(function(){
+				console.log($(this).attr('product_attribute_name'), $(this).attr('product_attribute_value'));
+			})
+			if($('.product_attribute').parent('li').hasClass('active')){
+				console.log($(this).attr('product_attribute_name'), $(this).attr('product_attribute_value'));
+			}
+			
+		})
+	});
+</script>
+
+<!-- change page script -->
+<script>
+	function changePage(page_number) {
+		var href = new URL(window.location.href)
+		href.searchParams.set('page',page_number)
+		window.location.href = href.toString()
+	}
+</script>
+
+
+<!-- brand select filter -->
+<script>
+	$(document).ready(function () {
+		var href = new URL(window.location.href);
+		var brand = href.searchParams.get('brand')
+		console.log(brand,'---brand value');
+		console.log(typeof(brand),'-----brand type');
+		if (brand == null){
+			brand = []
+		}
+		else if(brand.replace(/^\s+|\s+$/g, '') == ''){
+			brand = []
+		}
+		else{
+			brand = brand.replace(/^\s+|\s+$/g, '').replaceAll('"','').split('_')
+		}
+		
+
+		// check all brands which are selected and change css :after background color
+		for(brand_id of brand){
+			// console.log(brand_id)
+			$('.brand-list-item').each(function(){
+				if($(this).find('a').attr('brand-id') == brand_id){	
+					// console.log("#brand_a"+brand_id);
+					document.styleSheets[2].addRule('#brand_abrand_id:after'.replace('brand_id',brand_id),'content: "✓";font-weight: 600;color: #3780be;font-size: 12px;padding-left: 2px;')
+					// console.log(document.styleSheets[2]);
+				}
+			})
+		}
+		$('.brand-list-item').click(function () {
+			var selected_brand = $(this).find('a').attr('brand-id')
+			if (brand == null){
+				brand = []
+			}		
+			if (brand.length == 0){
+				console.log('null');
+				brand.push(selected_brand)
+			}
+			
+			else{
+				if(brand.indexOf(selected_brand) != -1){
+					brand.splice(brand.indexOf(selected_brand),1)
+				}
+				else{
+					brand.push(selected_brand)
+				}
+				
+			}
+			brand = brand.join('_')
+			console.log(brand,'--------brand');
+            href.searchParams.set('brand',brand)
+			window.location.href = href.toString()
+			
+        })
+
+	});
+	</script>
+
+
+
+<!-- price range filter script -->
+<script>
+	var rangeSlider = $(".price-range"),
+		minamount = $("#minamount"),
+		maxamount = $("#maxamount"),
+		minPrice = rangeSlider.data('min'),
+		maxPrice = rangeSlider.data('max');
+		console.log("{{ set_max_price }}","{{ set_min_price }}", "{{ max }}", "{{ min }}");
+	rangeSlider.slider({
+		range: true,
+		min: parseInt("{{min}}"),
+		max: parseInt("{{ max }}"),
+		values: ["{{ set_min_price }}", "{{ set_max_price }}"],
+		slide: function (event, ui) {
+			minamount.val('₹' + ui.values[0]);
+			maxamount.val('₹' + ui.values[1]);
+		},
+		stop: function (event, ui) {
+			// console.log('release')
+			var href = new URL(window.location.href);
+			href.searchParams.set('min', ui.values[0]);
+			href.searchParams.set('max', ui.values[1]);
+			window.location.href = href.toString()
+		}
+	});
+	minamount.val('₹' + rangeSlider.slider("values", 0));
+	maxamount.val('₹' + rangeSlider.slider("values", 1));
+</script>
+
+
+
+<!-- show which category is selected -->
+<script>
+    $(document).ready(function () {
+        var href = new URL(window.location.href);
+        var category = href.searchParams.get('category')
+        var filter_list = []
+        for(filter of href.searchParams.toString().split('&')){
+            // console.log(filter)
+            var temp_dict = {}
+            temp_dict[filter.split('=')[0]] = filter.split('=')[1]
+            filter_list.push(temp_dict)
+        }
+        // console.log(filter_list);
+        var filter_html = []
+        var price_value = ""
+		var total_price_count = 0
+        var filter_html_text = '<span class="badge badge-pill badge-primary remove_filter" filter=filter-key filter-id=filter_id>filter_value <i class="fa fa-times-circle" aria-hidden="true"></i></span>'
+        for(dict of filter_list){
+            for (var key in dict)  {
+                console.log(key,dict[key])
+                if (key == 'brand'){
+                    // console.log(decodeURIComponent(href.searchParams.getAll(key)))
+                    // {% for brand in brands %}
+                        if(decodeURIComponent(href.searchParams.getAll(key)).includes("{{ brand.id }}")){
+                        filter_html.push(filter_html_text.replace("filter_value","Brand: {{ brand.name|slice:':8'|title }}").replace('filter-key',key).replace('filter_id',"{{ brand.id }}"))
+                        }
+                    // {% endfor %}
+                }
+                else if (key == 'category'){
+					// {% for category,info in categories %}
+						if("{{ category.id }}" == dict[key]){
+							filter_html.push(filter_html_text.replace("filter_value","Category: {{ category.name|title }}").replace('filter-key',key))
+							// {% for category_ancestor in category.get_ancestors %}
+									console.log("{{ category_ancestor|safe }}")
+							$('.site-pagination').append("/ <a href={% url 'products' %}?category={{category_ancestor.id}}>{{ category_ancestor|title }}</a>")
+
+							// {% endfor %}
+							$('.site-pagination').append("/ <a href={% url 'products' %}?category={{category.id}}>{{ category.name|title }}</a>")
+							
+						}
+					// {% endfor %}
+                }
+                else if (key == 'min' | key == 'max' ){
+                    total_price_count += 1
+                    if(price_value != ""){
+                        price_value += "-"+dict[key]
+                    }
+                    else{
+                        price_value += dict[key]
+                    }
+                    if(total_price_count == 2){
+                        filter_html.push(filter_html_text.replace("filter_value","price: "+(price_value).toString()).replace('filter-key','price'))
+                    }
+                }
+                else if(key == 'search'){
+                    filter_html.push(filter_html_text.replace('filter-key',key).replace("filter_value",'search: '+dict[key]))
+                }
+            }
+            
+        }
+        // console.log(filter_html)
+        $('#filter_div').html(filter_html)
+        $('.remove_filter').click(function(){
+            if($(this).attr('filter') == 'price'){
+                href.searchParams.delete('min')
+                href.searchParams.delete('max')
+				window.location.href = href.toString()
+            }
+            else if($(this).attr('filter') == 'brand')
+            { 
+                let brand = href.searchParams.get('brand')
+				if (brand == null){
+					brand = []
+				}
+				else if(brand.replace(/^\s+|\s+$/g, '') == ''){
+					brand = []
+				}
+				else{
+					brand = brand.replace(/^\s+|\s+$/g, '').replaceAll('"','').split('_')
+				}
+                // console.log(brand, typeof(brand));
+                brand.pop($(this).attr('filter-id'))
+				brand = brand.join('_')
+                href.searchParams.set('brand',brand)
+				window.location.href = href.toString()
+            }
+			else if($(this).attr('filter') == 'category'){
+                href.searchParams.delete($(this).attr('filter'))
+				console.log(href.pathname,'------------');
+				window.location.href = href.pathname
+			}
+            else{
+                href.searchParams.delete($(this).attr('filter'))
+				window.location.href = href.toString()
+            }
+            
+        })
+        
+    })
+</script>
+
+<!-- category padding add js -->
+
+<script>
+	$('.category-menu').children('li').hover(function () { 
+		$(this).nextAll('li').removeClass('active')
+	})
+	$(document).ready(function () {
+		$('.category-menu').find('.sub-menu').each(function () { 
+		// console.log($(this).html());
+		// console.log($(this));
+		// console.log($(this).parents('.category-menu'));
+			if($(this).parents('.category-menu').length == 1){
+				// console.log('find first element');
+				// console.log($(this).html());
+				$(this).children().find('a').css('padding-left','45px')
+			}
+			// console.log($(this).parents('.category-menu').length);
+			if($(this).parents('.category-menu').length == 2){
+				$(this).children().find('a').css('padding-left','65px')
+			}
+			if($(this).parents('.category-menu').length == 3){
+				$(this).children().find('a').css('padding-left','75px')
+			}
+			if($(this).parents('.category-menu').length > 3){
+				$(this).children().find('a').css('padding-left','75px')
+			}
+
+	 	})
+	});
+</script>
+
+{% endblock endscript %}
+	

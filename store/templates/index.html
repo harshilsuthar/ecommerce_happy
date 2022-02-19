@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero section -->
+<section class="hero-section">
+	<div class="hero-slider owl-carousel">
+		{% for banner in banners %}
+		<div class="hs-item set-bg" data-setbg="{{ banner.image.url }}">
+			<div class="container">
+				<div class="row">
+					<div class="col-xl-6 col-lg-7 text-white">
+						<span>New Arrivals</span>
+						<h2>{{ banner.product.name }}</h2>
+						<p>{{ banner.product.description }}</p>
+							<a href="{% url 'product_detail_view' banner.product.get_first_child.id %}" class="site-btn sb-line">DISCOVER</a>
+							{% if banner.product.product_set.count > 1 %}
+								<a href="{% url 'product_detail_view' banner.product.get_first_child.id %}" class="site-btn sb-white">ADD TO CART</a>
+							{% else %}
+								<button onclick="addToCart('{{banner.product.get_first_child.id}}',1,'')" class="site-btn sb-white">ADD TO CART</button>
+							{% endif %}	
+					</div>
+				</div>
+				<!-- <div class="offer-card text-white">
+					<span>from</span>
+					<h2><i class="fa fa-inr" aria-hidden="true"></i> {{ banner.product.price }}</h2>
+					<p>SHOP NOW</p>
+				</div> -->
+			</div>
+		</div>
+		{% endfor %}
+			
+		
+		
+	</div>
+	<div class="container">
+		<div class="slide-num-holder" id="snh-1"></div>
+	</div>
+</section>
+<!-- Hero section end -->
+
+
+
+<!-- Features section -->
+<!-- <section class="features-section">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-4 p-0 feature">
+				<div class="feature-inner">
+					<div class="feature-icon">
+						<img src="{% static 'img/icons/1.png' %}" alt="#">
+					</div>
+					<h2>Fast Secure Payments</h2>
+				</div>
+			</div>
+			<div class="col-md-4 p-0 feature">
+				<div class="feature-inner">
+					<div class="feature-icon">
+						<img src="{% static 'img/icons/2.png' %}" alt="#">
+					</div>
+					<h2>Premium Products</h2>
+				</div>
+			</div>
+			<div class="col-md-4 p-0 feature">
+				<div class="feature-inner">
+					<div class="feature-icon">
+						<img src="{% static 'img/icons/3.png' %}" alt="#">
+					</div>
+					<h2>Free & fast Delivery</h2>
+				</div>
+			</div>
+		</div>
+	</div>
+</section> -->
+<!-- Features section end -->
+
+
+<!-- letest product section -->
+<section class="top-letest-product-section">
+	<div class="container">
+		<div class="section-title">
+			<h3>LATEST PRODUCTS</h3>
+		</div>
+		<div class="product-slider owl-carousel">
+			
+			{% for product in latest_products %}
+			<div class="product-item" id="product_div{{product.id}}">
+				<div class="pi-pic">
+					<a href="{% url 'product_detail_view' product.get_first_child.id %}"><img src="{{ product.product_image.url }}" alt=""></a>
+					<div class="pi-links">
+						{% if product.product_set.count > 1 %}
+							<a href="{% url 'product_detail_view' product.get_first_child.id %}" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+						{% else %}
+							<a onclick="addToCart('{{product.get_first_child.id}}',1,'')" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+						{% endif %}
+						<!-- <a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a> -->
+						{% if product.get_first_child in wishlist_products %}
+							<a class="wishlist-btn" product-id='{{ product.id }}' disabled><i class="fa fa-heart text-danger"></i></a>
+						{% else %}
+							<a class="wishlist-btn" product-id='{{ product.id }}'><i class="flaticon-heart"></i></a>
+						{% endif %}
+					</div>
+				</div>
+				<div class="pi-text">
+					<h6><i class="fa fa-inr" aria-hidden="true"></i>  {{ product.price }}</h6>
+					<p>{{ product.name }} </p>
+				</div>
+			</div>
+			{% endfor %}
+				
+			
+		</div>
+	</div>
+</section>
+<!-- letest product section end -->
+
+
+
+<!-- Product filter section -->
+
+{% if top_selling_products %}	
+<section class="product-filter-section">
+	<div class="container">
+		<div class="section-title">
+			<h3>BROWSE TOP SELLING PRODUCTS</h3>
+		</div>
+		<div class="row">
+			
+			{% for product in top_selling_products %}
+			<div class="col-lg-3 col-sm-6">
+				<div class="product-item">
+					<div class="pi-pic">
+						<a href="{% url 'product_detail_view' product.get_first_child.id %}"><img src="{{ product.product_image.url }}" alt=""></a>
+						<div class="pi-links">
+							{% if product.product_set.count > 1 %}
+								<a href="{% url 'product_detail_view' product.get_first_child.id %}" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+							{% else %}
+								<a onclick="addToCart('{{product.get_first_child.id}}',1,'')" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+							{% endif %}
+							<!-- <a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a> -->
+							{% if product.get_first_child in wishlist_products %}
+								<a class="wishlist-btn" product-id='{{ product.id }}' disabled><i class="fa fa-heart text-danger"></i></a>
+							{% else %}
+								<a class="wishlist-btn" product-id='{{ product.id }}'><i class="flaticon-heart"></i></a>
+							{% endif %}
+						</div>
+					</div>
+					<div class="pi-text">
+						<h6><i class="fa fa-inr" aria-hidden="true"></i>  {{ product.price }}</h6>
+						<p>{{ product.name }} </p>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		
+	</div>
+</section>
+{% endif %}
+<!-- Product filter section end -->
+
+
+<!-- Banner section -->
+<!-- <section class="banner-section">
+	<div class="container">
+		<div class="banner set-bg" data-setbg="{% static 'img/banner-bg.jpg' %}">
+			<div class="tag-new">NEW</div>
+			<span>New Arrivals</span>
+			<h2>STRIPED SHIRTS</h2>
+			<a href="#" class="site-btn">SHOP NOW</a>
+		</div>
+	</div>
+</section> -->
+<!-- Banner section end  -->
+
+
+	
+{% endblock content %}
+	
+
+{% block endscript %}
+
+
+	
+{% endblock endscript %}
+	
