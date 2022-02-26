@@ -41,3 +41,5 @@ venv.bak/
 # media and production static
 media/
 static_files/
+
+ecommerce_happy.pem
