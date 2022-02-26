@@ -185,3 +185,52 @@ EMAIL_USE_TLS = True
 # CORS_ALLOWED_ORIGINS = ['https://web.postman.com']
 # CORS_REPLACE_HTTPS_REFERER = True
 CORS_ORIGIN_ALLOW_ALL = True
+
+
+#LOGGER SETTINGS
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s %(process)d [%(filename)s:%(lineno)s] \t %(message)s",
+        },
+    },
+    "handlers": {
+        "null": {
+            "class": "logging.NullHandler",
+        },
+        "django_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR.parent, 'logs/django.log'),
+            "maxBytes": 1024 * 1024 * 10,  # 10MB
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
+        "app_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(BASE_DIR.parent, 'logs/app.log'),
+            "maxBytes": 1024 * 1024 * 10,  # 10MB
+            "backupCount": 10,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["django_file"],
+            "propagate": False,
+            "level": "ERROR",
+        },
+        "django": {
+            "handlers": ["django_file"],
+            "propagate": False,
+            "level": "ERROR",
+        },
+        "app": {
+            "handlers": ["app_file"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+    },
+}

@@ -43,3 +43,5 @@ media/
 static_files/
 
 ecommerce_happy.pem
+
+logs
